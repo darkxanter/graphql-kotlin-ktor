@@ -1,0 +1,27 @@
+import java.util.Properties
+
+plugins {
+    `kotlin-dsl`
+}
+
+val javaVersion = JavaVersion.VERSION_11
+
+repositories {
+    gradlePluginPortal()
+    mavenCentral()
+}
+
+dependencies {
+    val properties = Properties()
+    properties.load(rootDir.parentFile.resolve("gradle.properties").inputStream())
+    val kotlinVersion: String by properties
+
+    api("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    api("org.jetbrains.dokka:dokka-gradle-plugin:$kotlinVersion")
+}
+
+tasks {
+    compileKotlin {
+        kotlinOptions.jvmTarget = javaVersion.toString()
+    }
+}
