@@ -2,6 +2,8 @@ plugins {
     id("com.github.darkxanter.library-convention")
 }
 
+description = "Ktor plugin for graphql-kotlin"
+
 dependencies {
     api(projects.graphqlKotlinKtorSubscriptions)
     api(libs.ktor.server.core)

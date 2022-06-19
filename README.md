@@ -13,6 +13,12 @@ Also provides subscriptions implementation for protocols `graphql-ws` and `graph
 ## Usage
 
 ```kotlin
+dependencies {
+    implementation("io.github.darkxanter.graphql", "graphql-kotlin-ktor-plugin", "0.1.0")
+}
+```
+
+```kotlin
 fun Application.configureGraphQLModule() {
     install(ContentNegotiation) {
         jackson()

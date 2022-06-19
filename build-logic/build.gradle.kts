@@ -6,6 +6,11 @@ plugins {
 
 val javaVersion = JavaVersion.VERSION_1_8
 
+java {
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+}
+
 repositories {
     gradlePluginPortal()
     mavenCentral()
