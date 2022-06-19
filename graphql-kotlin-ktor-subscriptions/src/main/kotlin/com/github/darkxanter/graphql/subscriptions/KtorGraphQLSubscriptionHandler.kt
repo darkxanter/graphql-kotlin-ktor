@@ -1,6 +1,5 @@
 package com.github.darkxanter.graphql.subscriptions
 
-import com.expediagroup.graphql.generator.execution.GraphQLContext
 import com.expediagroup.graphql.server.execution.DataLoaderRegistryFactory
 import com.expediagroup.graphql.server.extensions.toExecutionInput
 import com.expediagroup.graphql.server.extensions.toGraphQLError
@@ -28,21 +27,25 @@ public open class KtorGraphQLSubscriptionHandler(
 
     public fun executeSubscription(
         graphQLRequest: GraphQLRequest,
-        graphQLContext: GraphQLContext?,
         graphQLContextMap: Map<*, Any>? = null
     ): Flow<GraphQLResponse<*>> {
         val dataLoaderRegistry = dataLoaderRegistryFactory?.generate()
-        val input = graphQLRequest.toExecutionInput(graphQLContext, dataLoaderRegistry, graphQLContextMap)
+        val input = graphQLRequest.toExecutionInput(
+            dataLoaderRegistry = dataLoaderRegistry,
+            graphQLContextMap = graphQLContextMap,
+        )
         return execute(input)
     }
 
     public fun executeSubscription(
         graphQLRequest: GraphQLRequestWS,
-        graphQLContext: GraphQLContext?,
         graphQLContextMap: Map<*, Any>? = null
     ): Flow<GraphQLResponse<*>> {
         val dataLoaderRegistry = dataLoaderRegistryFactory?.generate()
-        val input = graphQLRequest.toExecutionInput(graphQLContext, dataLoaderRegistry, graphQLContextMap)
+        val input = graphQLRequest.toExecutionInput(
+            dataLoaderRegistry = dataLoaderRegistry,
+            graphQLContextMap = graphQLContextMap,
+        )
         return execute(input)
     }
 

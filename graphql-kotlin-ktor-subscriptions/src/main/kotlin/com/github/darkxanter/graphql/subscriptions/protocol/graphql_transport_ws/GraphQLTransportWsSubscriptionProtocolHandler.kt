@@ -1,17 +1,17 @@
-@file:Suppress("DEPRECATION")
-
 package com.github.darkxanter.graphql.subscriptions.protocol.graphql_transport_ws
 
+import com.expediagroup.graphql.server.execution.GraphQLContextFactory
 import com.expediagroup.graphql.server.types.GraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLServerError
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.github.darkxanter.graphql.subscriptions.ApolloSubscriptionHooks
 import com.github.darkxanter.graphql.subscriptions.KtorGraphQLSubscriptionHandler
-import com.github.darkxanter.graphql.subscriptions.KtorSubscriptionGraphQLContextFactory
 import com.github.darkxanter.graphql.subscriptions.SubscriptionProtocolHandler
 import com.github.darkxanter.graphql.subscriptions.castToMapOfStringString
+import io.ktor.server.application.ApplicationCall
+import io.ktor.server.websocket.WebSocketServerSession
 import io.ktor.websocket.CloseReason
-import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -34,17 +34,17 @@ import kotlin.time.Duration
  * https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
  */
 public class GraphQLTransportWsSubscriptionProtocolHandler(
-    private val contextFactory: KtorSubscriptionGraphQLContextFactory<*>,
+    private val contextFactory: GraphQLContextFactory<*, ApplicationCall>,
     private val subscriptionHandler: KtorGraphQLSubscriptionHandler,
     private val objectMapper: ObjectMapper,
-//    private val subscriptionHooks: ApolloSubscriptionHooks,
+    private val subscriptionHooks: ApolloSubscriptionHooks,
     private val pingInterval: Duration = Duration.ZERO,
 ) : SubscriptionProtocolHandler<SubscriptionOperationMessage> {
     private val sessionState = GraphQLTransportWsSubscriptionSessionState()
     private val logger = LoggerFactory.getLogger(GraphQLTransportWsSubscriptionProtocolHandler::class.java)
 
     @Suppress("Detekt.TooGenericExceptionCaught")
-    override suspend fun handle(payload: String, session: WebSocketSession): Flow<SubscriptionOperationMessage> {
+    override suspend fun handle(payload: String, session: WebSocketServerSession): Flow<SubscriptionOperationMessage> {
         val operationMessage = convertToMessageOrNull(payload) ?: return closeWithInvalidMessage(
             session,
             "Unknown message or message with missing fields",
@@ -84,12 +84,12 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
      * If the keep alive configuration is set, send a message back to client at every interval until the session is terminated.
      * Otherwise, just return empty flow to append to the acknowledgment message.
      */
-    private fun getPingFlow(session: WebSocketSession): Flow<SubscriptionOperationMessage> {
+    private fun getPingFlow(session: WebSocketServerSession): Flow<SubscriptionOperationMessage> {
         if (pingInterval.isPositive()) {
             return flow {
                 while (true) {
                     emit(SubscriptionOperationMessage.Ping())
-                    delay(pingInterval)
+                    delay(pingInterval.inWholeMilliseconds)
                 }
             }.onStart {
                 sessionState.saveKeepAliveSubscription(session, currentCoroutineContext().job)
@@ -101,13 +101,12 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     @Suppress("Detekt.TooGenericExceptionCaught")
     private fun startSubscription(
         operationMessage: SubscriptionOperationMessage.Subscribe,
-        session: WebSocketSession
+        session: WebSocketServerSession
     ): Flow<SubscriptionOperationMessage> {
-        val context = sessionState.getContext(session)
         val graphQLContext = sessionState.getGraphQLContext(session)
 
-//        subscriptionHooks.onOperation(operationMessage, session, context)
-//        subscriptionHooks.onOperationWithContext(operationMessage, session, graphQLContext)
+        // TODO FIX IT
+//        subscriptionHooks.onOperation(operationMessage, session, graphQLContext)
 
         if (sessionState.doesOperationExist(session, operationMessage)) {
             logger.info("Already subscribed to operation ${operationMessage.id} for session $session")
@@ -115,7 +114,7 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
         }
 
         try {
-            return subscriptionHandler.executeSubscription(operationMessage.payload, context, graphQLContext)
+            return subscriptionHandler.executeSubscription(operationMessage.payload, graphQLContext)
                 .map<GraphQLResponse<*>, SubscriptionOperationMessage> {
                     if (it.errors?.isNotEmpty() == true) {
                         SubscriptionOperationMessage.Error(
@@ -152,7 +151,7 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
 
     private suspend fun onInit(
         operationMessage: SubscriptionOperationMessage.ConnectionInit,
-        session: WebSocketSession,
+        session: WebSocketServerSession,
     ): Flow<SubscriptionOperationMessage> {
         saveContext(operationMessage, session)
         val acknowledgeMessage = flowOf<SubscriptionOperationMessage>(SubscriptionOperationMessage.ConnectionAck())
@@ -168,15 +167,12 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
      */
     private suspend fun saveContext(
         operationMessage: SubscriptionOperationMessage.ConnectionInit,
-        session: WebSocketSession
+        session: WebSocketServerSession
     ) {
         val connectionParams = castToMapOfStringString(operationMessage.payload)
-        val context = contextFactory.generateContext(session)
-        val graphQLContext = contextFactory.generateContextMap(session)
-//        val onConnectContext = subscriptionHooks.onConnect(connectionParams, session, context)
-//        val onConnectGraphQLContext = subscriptionHooks.onConnectWithContext(connectionParams, session, graphQLContext)
-//        sessionState.saveContext(session, onConnectContext)
-//        sessionState.saveContextMap(session, onConnectGraphQLContext)
+        val graphQLContext = contextFactory.generateContextMap(session.call)
+        val onConnectContext = subscriptionHooks.onConnect(connectionParams, session, graphQLContext)
+        sessionState.saveContextMap(session, onConnectContext)
     }
 
     /**
@@ -184,20 +180,20 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
      */
     private fun onComplete(
         operationMessage: SubscriptionOperationMessage,
-        session: WebSocketSession
+        session: WebSocketServerSession
     ): Flow<SubscriptionOperationMessage> {
-//        subscriptionHooks.onOperationComplete(session)
+        subscriptionHooks.onOperationComplete(session)
         return sessionState.completeOperation(session, operationMessage)
     }
 
-    private suspend fun onDisconnect(session: WebSocketSession): Flow<SubscriptionOperationMessage> {
-//        subscriptionHooks.onDisconnect(session)
+    private suspend fun onDisconnect(session: WebSocketServerSession): Flow<SubscriptionOperationMessage> {
+        subscriptionHooks.onDisconnect(session)
         sessionState.terminateSession(session)
         return emptyFlow()
     }
 
     private suspend fun onException(
-        session: WebSocketSession,
+        session: WebSocketServerSession,
         operationMessage: SubscriptionOperationMessage,
         exception: Exception
     ): Flow<SubscriptionOperationMessage> {
@@ -216,7 +212,7 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     }
 
     private suspend fun closeWithInvalidMessage(
-        session: WebSocketSession,
+        session: WebSocketServerSession,
         text: String
     ): Flow<SubscriptionOperationMessage> {
         session.close(CloseReason(4400, text))

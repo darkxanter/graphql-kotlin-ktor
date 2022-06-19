@@ -1,8 +1,8 @@
 package com.github.darkxanter.graphql.subscriptions
 
-import io.ktor.websocket.WebSocketSession
+import io.ktor.server.websocket.WebSocketServerSession
 import kotlinx.coroutines.flow.Flow
 
 public interface SubscriptionProtocolHandler<TMessage> {
-    public suspend fun handle(payload: String, session: WebSocketSession): Flow<TMessage>
+    public suspend fun handle(payload: String, session: WebSocketServerSession): Flow<TMessage>
 }

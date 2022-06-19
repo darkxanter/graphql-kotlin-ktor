@@ -2,10 +2,10 @@ package com.github.darkxanter.graphql.subscriptions
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import io.ktor.server.routing.*
-import io.ktor.server.websocket.*
+import io.ktor.server.routing.Route
+import io.ktor.server.websocket.WebSocketServerSession
+import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
-import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.readText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -25,7 +25,7 @@ public abstract class SubscriptionWebSocketHandler<TMessage>(
     public abstract val protocol: String
 
     public suspend fun handle(
-        session: WebSocketSession,
+        session: WebSocketServerSession,
         context: CoroutineContext = Dispatchers.IO,
     ): Unit = coroutineScope {
         for (frame in session.incoming) {
@@ -45,10 +45,10 @@ public abstract class SubscriptionWebSocketHandler<TMessage>(
             }
         }
     }
+}
 
-    public fun Routing.webSocket(path: String) {
-        webSocket(path, protocol = protocol) {
-            handle(this)
-        }
+public fun SubscriptionWebSocketHandler<*>.webSocket(route: Route, path: String) {
+    route.webSocket(path, protocol = protocol) {
+        handle(this)
     }
 }

@@ -3,8 +3,8 @@ plugins {
 }
 
 dependencies {
+    api(projects.graphqlKotlinKtorSubscriptions)
     api(libs.ktor.server.core)
-    api(libs.ktor.server.websockets)
     api(libs.graphqlKotlin.server)
 
     testImplementation(libs.bundles.test)

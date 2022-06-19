@@ -1,9 +1,5 @@
-@file:Suppress("DEPRECATION")
+package com.github.darkxanter.graphql.subscriptions.protocol.graphql_ws
 
-package dev.xanter.graphql.subscription.protocol.graphql_ws
-
-import com.expediagroup.graphql.generator.execution.GraphQLContext
-import com.github.darkxanter.graphql.subscriptions.protocol.graphql_ws.SubscriptionOperationMessage
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import kotlinx.coroutines.Job
@@ -23,22 +19,8 @@ internal class GraphQLWsSubscriptionSessionState {
     @Suppress("MemberVisibilityCanBePrivate")
     internal val activeOperations = ConcurrentHashMap<WebSocketSession, ConcurrentHashMap<String, Job>>()
 
-    // The context is saved by web socket session id
-    private val cachedContext = ConcurrentHashMap<WebSocketSession, GraphQLContext>()
-
     // The graphQL context is saved by web socket session id
     private val cachedGraphQLContext = ConcurrentHashMap<WebSocketSession, Map<*, Any>>()
-
-    /**
-     * Save the context created from the factory and possibly updated in the onConnect hook.
-     * This allows us to include some initial state to be used when handling all the messages.
-     * This will be removed in [terminateSession].
-     */
-    fun saveContext(session: WebSocketSession, graphQLContext: GraphQLContext?) {
-        if (graphQLContext != null) {
-            cachedContext[session] = graphQLContext
-        }
-    }
 
     /**
      * Save the context created from the factory and possibly updated in the onConnect hook.
@@ -50,11 +32,6 @@ internal class GraphQLWsSubscriptionSessionState {
             cachedGraphQLContext[session] = graphQLContext
         }
     }
-
-    /**
-     * Return the context for this session.
-     */
-    fun getContext(session: WebSocketSession): GraphQLContext? = cachedContext[session]
 
     /**
      * Return the graphQL context for this session.
@@ -144,7 +121,6 @@ internal class GraphQLWsSubscriptionSessionState {
     suspend fun terminateSession(session: WebSocketSession) {
         activeOperations[session]?.forEach { (_, subscription) -> subscription.cancel() }
         activeOperations.remove(session)
-        cachedContext.remove(session)
         cachedGraphQLContext.remove(session)
         activeKeepAliveSessions[session]?.cancel()
         activeKeepAliveSessions.remove(session)

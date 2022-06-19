@@ -17,12 +17,10 @@ public data class GraphQLRequestWS(
     val extensions: Map<String, Any?>? = null,
 )
 
-
 /**
  * Convert the common [GraphQLRequestWS] to the execution input used by graphql-java
  */
 public fun GraphQLRequestWS.toExecutionInput(
-    graphQLContext: Any? = null,
     dataLoaderRegistry: DataLoaderRegistry? = null,
     graphQLContextMap: Map<*, Any>? = null
 ): ExecutionInput =
@@ -32,7 +30,6 @@ public fun GraphQLRequestWS.toExecutionInput(
         .variables(variables ?: emptyMap())
         .extensions(extensions ?: emptyMap())
         .also { builder ->
-            graphQLContext?.let { builder.context(it) }
             graphQLContextMap?.let { builder.graphQLContext(it) }
         }
         .dataLoaderRegistry(dataLoaderRegistry ?: DataLoaderRegistry())

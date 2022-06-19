@@ -8,7 +8,7 @@ plugins {
     signing
 }
 
-val javaVersion = JavaVersion.VERSION_11
+val javaVersion = JavaVersion.VERSION_1_8
 
 java {
     withSourcesJar()
@@ -22,11 +22,8 @@ kotlin {
 }
 
 dependencies {
-    val logbackVersion: String by project
+//    implementation(platform(kotlin("bom")))
 
-    implementation(platform(kotlin("bom")))
-
-    testImplementation("ch.qos.logback:logback-classic:$logbackVersion")
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 }
@@ -73,7 +70,7 @@ publishing {
                 afterEvaluate {
                     this@pom.description.set(project.description)
                 }
-                url.set("https://github.com/darkxanter/kotlock")
+                url.set("https://github.com/darkxanter/graphql-kotlin-ktor")
 
                 licenses {
                     license {
@@ -83,8 +80,8 @@ publishing {
                 }
                 scm {
                     url.set("https://github.com/darkxanter/kotlock")
-                    connection.set("scm:git:git://github.com/darkxanter/kotlock.git")
-                    developerConnection.set("scm:git:git@github.com:darkxanter/kotlock.git")
+                    connection.set("scm:git:git://github.com/darkxanter/graphql-kotlin-ktor.git")
+                    developerConnection.set("scm:git:git@github.com:darkxanter/graphql-kotlin-ktor.git")
                 }
                 developers {
                     developer {
