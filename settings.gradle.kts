@@ -19,4 +19,4 @@ pluginManagement {
 includeBuild("build-logic")
 include(":graphql-kotlin-ktor-plugin")
 include(":graphql-kotlin-ktor-subscriptions")
-include(":sample")
+include(":example")
