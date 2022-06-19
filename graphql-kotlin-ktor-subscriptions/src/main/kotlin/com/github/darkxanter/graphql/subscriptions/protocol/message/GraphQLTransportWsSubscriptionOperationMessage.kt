@@ -1,4 +1,4 @@
-package com.github.darkxanter.graphql.subscriptions.protocol.graphql_transport_ws
+package com.github.darkxanter.graphql.subscriptions.protocol.message
 
 import com.expediagroup.graphql.server.types.GraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLServerError
@@ -33,7 +33,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 )
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public sealed interface SubscriptionOperationMessage {
+public sealed interface GraphQLTransportWsSubscriptionOperationMessage : SubscriptionOperationMessage {
     /**
      * Direction: **Client -> Server**
      *
@@ -51,7 +51,7 @@ public sealed interface SubscriptionOperationMessage {
     @JsonTypeName("connection_init")
     public data class ConnectionInit(
         val payload: Map<String, Any?>? = null,
-    ) : SubscriptionOperationMessage
+    ) : GraphQLTransportWsSubscriptionOperationMessage
 
     /**
      * Direction: **Server -> Client**
@@ -63,7 +63,7 @@ public sealed interface SubscriptionOperationMessage {
     @JsonTypeName("connection_ack")
     public data class ConnectionAck(
         val payload: Map<String, Any?>? = null,
-    ) : SubscriptionOperationMessage
+    ) : GraphQLTransportWsSubscriptionOperationMessage
 
     /**
      * Direction: **bidirectional**
@@ -79,7 +79,7 @@ public sealed interface SubscriptionOperationMessage {
     @JsonTypeName("ping")
     public data class Ping(
         val payload: Map<String, Any?>? = null,
-    ) : SubscriptionOperationMessage
+    ) : GraphQLTransportWsSubscriptionOperationMessage
 
     /**
      * Direction: **bidirectional**
@@ -94,7 +94,7 @@ public sealed interface SubscriptionOperationMessage {
     @JsonTypeName("pong")
     public data class Pong(
         val payload: Map<String, Any?>? = null,
-    ) : SubscriptionOperationMessage
+    ) : GraphQLTransportWsSubscriptionOperationMessage
 
 
     /**
@@ -114,7 +114,7 @@ public sealed interface SubscriptionOperationMessage {
     public data class Subscribe(
         override val id: String,
         val payload: GraphQLRequestWS,
-    ) : SubscriptionOperationMessage, OperationMessageId
+    ) : GraphQLTransportWsSubscriptionOperationMessage, OperationMessageId
 
     /**
      * Direction: **Server -> Client**
@@ -126,7 +126,7 @@ public sealed interface SubscriptionOperationMessage {
     public data class Next(
         override val id: String,
         val payload: GraphQLResponse<*>,
-    ) : SubscriptionOperationMessage, OperationMessageId
+    ) : GraphQLTransportWsSubscriptionOperationMessage, OperationMessageId
 
     /**
      * Direction: **Server -> Client**
@@ -139,7 +139,7 @@ public sealed interface SubscriptionOperationMessage {
     public data class Error(
         override val id: String,
         val payload: List<GraphQLServerError>,
-    ) : SubscriptionOperationMessage, OperationMessageId
+    ) : GraphQLTransportWsSubscriptionOperationMessage, OperationMessageId
 
     /**
      * Direction: **bidirectional**
@@ -158,7 +158,7 @@ public sealed interface SubscriptionOperationMessage {
     @JsonTypeName("complete")
     public data class Complete(
         override val id: String,
-    ) : SubscriptionOperationMessage, OperationMessageId
+    ) : GraphQLTransportWsSubscriptionOperationMessage, OperationMessageId
 
     /**
      * Direction: **bidirectional**
@@ -177,8 +177,8 @@ public sealed interface SubscriptionOperationMessage {
     }
 }
 
-public val SubscriptionOperationMessage.id: String?
+public val GraphQLTransportWsSubscriptionOperationMessage.id: String?
     get() = when (this) {
-        is SubscriptionOperationMessage.OperationMessageId -> id
+        is GraphQLTransportWsSubscriptionOperationMessage.OperationMessageId -> id
         else -> null
     }

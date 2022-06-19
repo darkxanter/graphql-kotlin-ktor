@@ -1,5 +1,6 @@
 package com.github.darkxanter.graphql.subscriptions.protocol.graphql_ws
 
+import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLWsSubscriptionOperationMessage
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import kotlinx.coroutines.Job
@@ -52,7 +53,7 @@ internal class GraphQLWsSubscriptionSessionState {
      * This will override values without cancelling the subscription, so it is the responsibility of the consumer to cancel.
      * These messages will be stopped on [stopOperation].
      */
-    fun saveOperation(session: WebSocketSession, operationMessage: SubscriptionOperationMessage, subscription: Job) {
+    fun saveOperation(session: WebSocketSession, operationMessage: GraphQLWsSubscriptionOperationMessage, subscription: Job) {
         val id = operationMessage.id
         if (id != null) {
             val operationsForSession: ConcurrentHashMap<String, Job> =
@@ -62,35 +63,35 @@ internal class GraphQLWsSubscriptionSessionState {
     }
 
     /**
-     * Send the [SubscriptionOperationMessage.ServerMessages.GQL_COMPLETE] message.
+     * Send the [GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE] message.
      * This can happen when the publisher finishes or if the client manually sends the stop message.
      */
     fun completeOperation(
         session: WebSocketSession,
-        operationMessage: SubscriptionOperationMessage
-    ): Flow<SubscriptionOperationMessage> {
+        operationMessage: GraphQLWsSubscriptionOperationMessage
+    ): Flow<GraphQLWsSubscriptionOperationMessage> {
         return getCompleteMessage(operationMessage)
             .onCompletion { removeActiveOperation(session, operationMessage.id, cancelSubscription = false) }
     }
 
     /**
-     * Stop the subscription sending data and send the [SubscriptionOperationMessage.ServerMessages.GQL_COMPLETE] message.
+     * Stop the subscription sending data and send the [GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE] message.
      * Does NOT terminate the session.
      */
     fun stopOperation(
         session: WebSocketSession,
-        operationMessage: SubscriptionOperationMessage
-    ): Flow<SubscriptionOperationMessage> {
+        operationMessage: GraphQLWsSubscriptionOperationMessage
+    ): Flow<GraphQLWsSubscriptionOperationMessage> {
         return getCompleteMessage(operationMessage)
             .onCompletion { removeActiveOperation(session, operationMessage.id, cancelSubscription = true) }
     }
 
-    private fun getCompleteMessage(operationMessage: SubscriptionOperationMessage): Flow<SubscriptionOperationMessage> {
+    private fun getCompleteMessage(operationMessage: GraphQLWsSubscriptionOperationMessage): Flow<GraphQLWsSubscriptionOperationMessage> {
         val id = operationMessage.id
         if (id != null) {
             return flowOf(
-                SubscriptionOperationMessage(
-                    type = SubscriptionOperationMessage.ServerMessages.GQL_COMPLETE.type,
+                GraphQLWsSubscriptionOperationMessage(
+                    type = GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE.type,
                     id = id
                 )
             )
@@ -130,6 +131,6 @@ internal class GraphQLWsSubscriptionSessionState {
     /**
      * Looks up the operation for the client, to check if it already exists
      */
-    fun doesOperationExist(session: WebSocketSession, operationMessage: SubscriptionOperationMessage): Boolean =
+    fun doesOperationExist(session: WebSocketSession, operationMessage: GraphQLWsSubscriptionOperationMessage): Boolean =
         activeOperations[session]?.containsKey(operationMessage.id) ?: false
 }

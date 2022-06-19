@@ -1,6 +1,6 @@
 package com.github.darkxanter.graphql.subscriptions
 
-import com.github.darkxanter.graphql.subscriptions.protocol.graphql_ws.SubscriptionOperationMessage
+import com.github.darkxanter.graphql.subscriptions.protocol.message.SubscriptionOperationMessage
 import io.ktor.server.websocket.WebSocketServerSession
 
 /**

@@ -7,8 +7,8 @@ import com.expediagroup.graphql.server.extensions.toGraphQLKotlinType
 import com.expediagroup.graphql.server.extensions.toGraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import com.expediagroup.graphql.server.types.GraphQLResponse
-import com.github.darkxanter.graphql.subscriptions.protocol.graphql_transport_ws.GraphQLRequestWS
-import com.github.darkxanter.graphql.subscriptions.protocol.graphql_transport_ws.toExecutionInput
+import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLRequestWS
+import com.github.darkxanter.graphql.subscriptions.protocol.message.toExecutionInput
 import graphql.ExecutionInput
 import graphql.ExecutionResult
 import graphql.GraphQL
@@ -24,7 +24,6 @@ public open class KtorGraphQLSubscriptionHandler(
     private val graphQL: GraphQL,
     private val dataLoaderRegistryFactory: DataLoaderRegistryFactory? = null
 ) {
-
     public fun executeSubscription(
         graphQLRequest: GraphQLRequest,
         graphQLContextMap: Map<*, Any>? = null

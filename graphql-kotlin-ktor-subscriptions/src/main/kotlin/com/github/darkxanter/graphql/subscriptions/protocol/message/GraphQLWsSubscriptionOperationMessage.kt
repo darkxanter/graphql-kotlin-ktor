@@ -1,4 +1,4 @@
-package com.github.darkxanter.graphql.subscriptions.protocol.graphql_ws
+package com.github.darkxanter.graphql.subscriptions.protocol.message
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
@@ -9,11 +9,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
  * https://github.com/apollographql/subscriptions-transport-ws/blob/master/PROTOCOL.md
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public data class SubscriptionOperationMessage(
+public data class GraphQLWsSubscriptionOperationMessage(
     val type: String,
     val id: String? = null,
     val payload: Any? = null
-) {
+) : SubscriptionOperationMessage {
     public enum class ClientMessages(public val type: String) {
         GQL_CONNECTION_INIT("connection_init"),
         GQL_START("start"),

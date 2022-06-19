@@ -47,6 +47,8 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
+import kotlinx.coroutines.Dispatchers
+import kotlin.coroutines.CoroutineContext
 
 @Suppress("MemberVisibilityCanBePrivate")
 public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
@@ -62,7 +64,8 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         subscriptions = config.subscriptions.toTopLevelObjects(),
     )
 
-    public val dataLoaderRegistryFactory: DataLoaderRegistryFactory = DefaultDataLoaderRegistryFactory(config.dataLoaders)
+    public val dataLoaderRegistryFactory: DataLoaderRegistryFactory =
+        DefaultDataLoaderRegistryFactory(config.dataLoaders)
 
     public val graphQL: GraphQL = GraphQL
         .newGraphQL(graphQLSchema)
@@ -123,7 +126,7 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
     private fun configureSubscriptions(application: Application) {
         val subscriptionHooks = config.subscriptionHooks
         val subscriptionObjectMapper = config.subscriptionObjectMapper
-
+        val subscriptionCoroutineContext = config.subscriptionCoroutineContext
 
         val graphQLWsSubscriptionProtocolHandler = GraphQLWsSubscriptionProtocolHandler(
             config.contextFactory,
@@ -148,8 +151,8 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         )
 
         application.routing {
-            graphQLWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint)
-            graphQLTransportWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint)
+            graphQLWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint, subscriptionCoroutineContext)
+            graphQLTransportWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint, subscriptionCoroutineContext)
         }
     }
 }
@@ -162,6 +165,7 @@ public class GraphQLKotlinConfiguration {
         supportedPackages = emptyList(),
         hooks = FlowSubscriptionSchemaGeneratorHooks()
     )
+
     public fun schemaGeneratorConfig(configure: SchemaGeneratorConfigMutable.() -> Unit) {
         schemaGeneratorConfig = SchemaGeneratorConfigMutable(
             supportedPackages = emptyList(),
@@ -190,8 +194,9 @@ public class GraphQLKotlinConfiguration {
         configureGraphQL = configure
     }
 
-    public val subscriptionHooks: ApolloSubscriptionHooks = SimpleSubscriptionHooks()
-    public val subscriptionObjectMapper: ObjectMapper = jacksonObjectMapper()
+    public var subscriptionHooks: ApolloSubscriptionHooks = SimpleSubscriptionHooks()
+    public var subscriptionObjectMapper: ObjectMapper = jacksonObjectMapper()
+    public var subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO
 
     public var requestParser: KtorGraphQLRequestParser = DefaultKtorGraphQLRequestParser()
     public fun requestParser(handler: KtorGraphQLRequestParserHandler) {
@@ -232,7 +237,7 @@ public class GraphQLKotlinConfiguration {
         override var dataFetcherFactoryProvider: KotlinDataFetcherFactoryProvider = SimpleKotlinDataFetcherFactoryProvider(),
         override var introspectionEnabled: Boolean = true,
         override var additionalTypes: Set<GraphQLType> = emptySet()
-    ): SchemaGeneratorConfig(
+    ) : SchemaGeneratorConfig(
         supportedPackages = supportedPackages,
         topLevelNames = topLevelNames,
         hooks = hooks,

@@ -11,9 +11,6 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.websocket.WebSockets
-import io.ktor.server.websocket.pingPeriod
-import io.ktor.server.websocket.timeout
-import java.time.Duration
 
 fun main() {
     embeddedServer(Netty, port = 4000, host = "0.0.0.0") {
@@ -29,8 +26,8 @@ fun Application.configureGraphQLModule() {
 
     install(CallLogging)
     install(WebSockets) {
-        pingPeriod = Duration.ofSeconds(15)
-        timeout = Duration.ofSeconds(15)
+//        pingPeriod = Duration.ofSeconds(15)
+//        timeout = Duration.ofSeconds(15)
     }
     install(GraphQLKotlin) {
         queries = listOf(
@@ -39,6 +36,7 @@ fun Application.configureGraphQLModule() {
         subscriptions = listOf(
             SimpleSubscription()
         )
+        subscriptionHooks = SubscriptionHooks()
 
         schemaGeneratorConfig {
             supportedPackages = listOf("example.graphql")
