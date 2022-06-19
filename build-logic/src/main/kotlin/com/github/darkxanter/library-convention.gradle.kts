@@ -66,7 +66,7 @@ publishing {
             artifact(javadocJar)
 
             pom {
-                name.set("Kotlock")
+                name.set("GraphQL Kotlin Ktor Plugin")
                 afterEvaluate {
                     this@pom.description.set(project.description)
                 }
@@ -79,7 +79,7 @@ publishing {
                     }
                 }
                 scm {
-                    url.set("https://github.com/darkxanter/kotlock")
+                    url.set("https://github.com/darkxanter/graphql-kotlin-ktor")
                     connection.set("scm:git:git://github.com/darkxanter/graphql-kotlin-ktor.git")
                     developerConnection.set("scm:git:git@github.com:darkxanter/graphql-kotlin-ktor.git")
                 }
@@ -92,20 +92,14 @@ publishing {
             }
         }
     }
-    repositories {
-        maven {
-            val releasesRepoUrl = uri("https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/")
-            val snapshotsRepoUrl = uri("https://s01.oss.sonatype.org/content/repositories/snapshots/")
-            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
-            credentials {
-                username = project.properties["mavenCentralUser"].toString()
-                password = project.properties["mavenCentralPassword"].toString()
-            }
-        }
-    }
 }
 
-//signing {
-//    useGpgCmd()
-//    sign(publishing.publications["mavenCentral"])
-//}
+signing {
+    setRequired { !project.version.toString().endsWith("-SNAPSHOT") && !project.hasProperty("skipSigning") }
+    if (project.hasProperty("signingKey")) {
+        useInMemoryPgpKeys(properties["signingKey"].toString(), properties["signingPassword"].toString())
+    } else {
+        useGpgCmd()
+    }
+    sign(publishing.publications["mavenCentral"])
+}
