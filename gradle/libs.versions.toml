@@ -22,6 +22,7 @@ ktor-client-java = { group = "io.ktor", name = "ktor-client-java", version.ref =
 ktor-client-auth = { group = "io.ktor", name = "ktor-client-auth", version.ref = "ktor" }
 ktor-client-contentNegotiation = { group = "io.ktor", name = "ktor-client-content-negotiation", version.ref = "ktor" }
 ktor-client-logging = { group = "io.ktor", name = "ktor-client-logging", version.ref = "ktor" }
+ktor-client-websockets = { group = "io.ktor", name = "ktor-client-websockets", version.ref = "ktor" }
 
 ktor-server-allPlugins = { group = "io.ktor", name = "ktor-server", version.ref = "ktor" }
 ktor-server-auth-core = { group = "io.ktor", name = "ktor-server-auth", version.ref = "ktor" }
@@ -54,7 +55,7 @@ graphqlKotlin-client = { module = "com.expediagroup:graphql-ktor-client", versio
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
-kotlin-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
+kotlin-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }
 
 [bundles]
 test = ["kotlin-test", "kotlin-junit", "logback"]

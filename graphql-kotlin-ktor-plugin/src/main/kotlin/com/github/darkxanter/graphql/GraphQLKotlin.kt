@@ -48,7 +48,9 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
 import kotlinx.coroutines.Dispatchers
+import kotlin.time.Duration
 import kotlin.coroutines.CoroutineContext
+import kotlin.time.Duration.Companion.seconds
 
 @Suppress("MemberVisibilityCanBePrivate")
 public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
@@ -127,19 +129,21 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         val subscriptionHooks = config.subscriptionHooks
         val subscriptionObjectMapper = config.subscriptionObjectMapper
         val subscriptionCoroutineContext = config.subscriptionCoroutineContext
+        val subscriptionConnectionInitWaitTimeout = config.subscriptionConnectionInitWaitTimeout
 
         val graphQLWsSubscriptionProtocolHandler = GraphQLWsSubscriptionProtocolHandler(
-            config.contextFactory,
-            KtorGraphQLSubscriptionHandler(graphQL, dataLoaderRegistryFactory),
-            subscriptionObjectMapper,
-            subscriptionHooks,
+            contextFactory = config.contextFactory,
+            subscriptionHandler = KtorGraphQLSubscriptionHandler(graphQL, dataLoaderRegistryFactory),
+            objectMapper = subscriptionObjectMapper,
+            subscriptionHooks = subscriptionHooks,
         )
 
         val graphQLTransportWsSubscriptionProtocolHandler = GraphQLTransportWsSubscriptionProtocolHandler(
-            config.contextFactory,
-            KtorGraphQLSubscriptionHandler(graphQL, dataLoaderRegistryFactory),
-            subscriptionObjectMapper,
-            subscriptionHooks,
+            contextFactory = config.contextFactory,
+            subscriptionHandler = KtorGraphQLSubscriptionHandler(graphQL, dataLoaderRegistryFactory),
+            objectMapper = subscriptionObjectMapper,
+            subscriptionHooks = subscriptionHooks,
+            connectionInitWaitTimeout = subscriptionConnectionInitWaitTimeout,
         )
 
         val graphQLWsSubscriptionHandler = GraphQLWsSubscriptionWebSocketHandler(
@@ -165,6 +169,8 @@ public class GraphQLKotlinConfiguration {
         supportedPackages = emptyList(),
         hooks = FlowSubscriptionSchemaGeneratorHooks()
     )
+
+    public var subscriptionConnectionInitWaitTimeout: Duration = 3.seconds
 
     public fun schemaGeneratorConfig(configure: SchemaGeneratorConfigMutable.() -> Unit) {
         schemaGeneratorConfig = SchemaGeneratorConfigMutable(

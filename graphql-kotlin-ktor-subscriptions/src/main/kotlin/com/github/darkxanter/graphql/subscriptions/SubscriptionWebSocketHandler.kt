@@ -29,6 +29,7 @@ public abstract class SubscriptionWebSocketHandler<TMessage>(
         context: CoroutineContext = Dispatchers.IO,
     ): Unit = supervisorScope {
         try {
+            subscriptionHandler.onConnect(session)
             for (frame in session.incoming) {
                 when (frame) {
                     is Frame.Text -> {

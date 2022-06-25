@@ -210,6 +210,8 @@ public class GraphQLWsSubscriptionProtocolHandler(
         return sessionState.stopOperation(session, operationMessage)
     }
 
+    override suspend fun onConnect(session: WebSocketServerSession): Unit = Unit
+
     override suspend fun onDisconnect(session: WebSocketServerSession) {
         subscriptionHooks.onDisconnect(session)
         sessionState.terminateSession(session)

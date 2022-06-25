@@ -13,7 +13,12 @@ import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLTrans
 import io.ktor.server.application.ApplicationCall
 import io.ktor.server.websocket.WebSocketServerSession
 import io.ktor.websocket.CloseReason
+import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -26,7 +31,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.time.Duration
 
 /**
@@ -40,12 +47,17 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     private val subscriptionHandler: KtorGraphQLSubscriptionHandler,
     private val objectMapper: ObjectMapper,
     private val subscriptionHooks: ApolloSubscriptionHooks,
+    private val connectionInitWaitTimeout: Duration,
     private val pingInterval: Duration = Duration.ZERO,
 ) : SubscriptionProtocolHandler<GraphQLTransportWsSubscriptionOperationMessage> {
     public companion object {
         public const val badRequestCode: Short = 4400
     }
 
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    /** New uninitialized sessions */
+    private val pendingSessions = ConcurrentHashMap<WebSocketSession, Job>()
     private val sessionState = GraphQLTransportWsSubscriptionSessionState()
     private val logger = LoggerFactory.getLogger(GraphQLTransportWsSubscriptionProtocolHandler::class.java)
 
@@ -158,6 +170,13 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
         operationMessage: GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit,
         session: WebSocketServerSession,
     ): Flow<GraphQLTransportWsSubscriptionOperationMessage> {
+        pendingSessions[session]?.cancel()
+        pendingSessions.remove(session)
+        if (sessionState.isInitialized(session)) {
+            sessionState.terminateSession(session, CloseReasons.tooManyInitRequests)
+            return flowOf()
+        }
+        sessionState.initialized(session)
         saveContext(operationMessage, session)
         val acknowledgeMessage = flowOf<GraphQLTransportWsSubscriptionOperationMessage>(GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck())
         val keepAliveFlow = getPingFlow(session)
@@ -189,6 +208,15 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     ): Flow<GraphQLTransportWsSubscriptionOperationMessage> {
         subscriptionHooks.onOperationComplete(session)
         return sessionState.completeOperation(session, operationMessage)
+    }
+
+    override suspend fun onConnect(session: WebSocketServerSession) {
+        pendingSessions[session] = scope.launch {
+            delay(connectionInitWaitTimeout)
+            logger.trace("session $session timeout")
+            sessionState.terminateSession(session, CloseReasons.connectionInitTimeout)
+            pendingSessions.remove(session)
+        }
     }
 
     override suspend fun onDisconnect(session: WebSocketServerSession) {

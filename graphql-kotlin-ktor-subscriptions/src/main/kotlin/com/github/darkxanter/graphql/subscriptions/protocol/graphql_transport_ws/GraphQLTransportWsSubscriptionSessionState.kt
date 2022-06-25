@@ -2,6 +2,7 @@ package com.github.darkxanter.graphql.subscriptions.protocol.graphql_transport_w
 
 import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLTransportWsSubscriptionOperationMessage
 import com.github.darkxanter.graphql.subscriptions.protocol.message.id
+import io.ktor.websocket.CloseReason
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
 import kotlinx.coroutines.Job
@@ -12,17 +13,19 @@ import kotlinx.coroutines.flow.onCompletion
 import java.util.concurrent.ConcurrentHashMap
 
 internal class GraphQLTransportWsSubscriptionSessionState {
+    private val sessions = ConcurrentHashMap.newKeySet<WebSocketSession>()
 
-    // Sessions are saved by web socket session id
-    @Suppress("MemberVisibilityCanBePrivate")
-    internal val activeKeepAliveSessions = ConcurrentHashMap<WebSocketSession, Job>()
+    /** Sessions are saved by web socket session id */
+    private val activeKeepAliveSessions = ConcurrentHashMap<WebSocketSession, Job>()
 
-    // Operations are saved by web socket session id, then operation id
-    @Suppress("MemberVisibilityCanBePrivate")
-    internal val activeOperations = ConcurrentHashMap<WebSocketSession, ConcurrentHashMap<String, Job>>()
+    /** Operations are saved by web socket session id, then operation id */
+    private val activeOperations = ConcurrentHashMap<WebSocketSession, ConcurrentHashMap<String, Job>>()
 
-    // The graphQL context is saved by web socket session id
+    /** The graphQL context is saved by web socket session id */
     private val cachedGraphQLContext = ConcurrentHashMap<WebSocketSession, Map<*, Any>>()
+
+    fun initialized(session: WebSocketSession) = sessions.add(session)
+    fun isInitialized(session: WebSocketSession) = sessions.contains(session)
 
     /**
      * Save the context created from the factory and possibly updated in the onConnect hook.
@@ -117,13 +120,17 @@ internal class GraphQLTransportWsSubscriptionSessionState {
     /**
      * Terminate the session, cancelling the keep alive messages and all operations active for this session.
      */
-    suspend fun terminateSession(session: WebSocketSession) {
+    suspend fun terminateSession(
+        session: WebSocketSession,
+        reason: CloseReason = CloseReason(CloseReason.Codes.NORMAL, ""),
+    ) {
+        sessions.remove(session)
         activeOperations[session]?.forEach { (_, subscription) -> subscription.cancel() }
         activeOperations.remove(session)
         cachedGraphQLContext.remove(session)
         activeKeepAliveSessions[session]?.cancel()
         activeKeepAliveSessions.remove(session)
-        session.close()
+        session.close(reason)
     }
 
     /**
