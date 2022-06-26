@@ -24,11 +24,8 @@ jobs:
       - name: Set up Gradle cache
         uses: gradle/gradle-build-action@v2
 
-      - name: Build libraries with Gradle
-        run: ./gradlew clean build
-
       - name: Test libraries with Gradle
-        run: ./gradlew check
+        run: ./gradlew clean check
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
