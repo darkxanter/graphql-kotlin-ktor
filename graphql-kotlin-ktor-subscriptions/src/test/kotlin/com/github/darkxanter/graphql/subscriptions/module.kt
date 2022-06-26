@@ -108,8 +108,8 @@ class SimpleSubscription : Subscription {
 
 
     @GraphQLDescription("Returns a delayed value")
-    fun delayedValue() = flow {
-        delay(1.seconds)
+    fun delayedValue(seconds: Int) = flow {
+        delay(seconds.seconds)
         emit(42)
     }
 

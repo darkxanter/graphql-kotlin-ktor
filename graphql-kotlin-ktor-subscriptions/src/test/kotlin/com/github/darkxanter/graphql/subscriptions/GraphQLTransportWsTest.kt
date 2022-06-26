@@ -218,7 +218,7 @@ class GraphQLTransportWsTest {
                 payload = GraphQLRequestWS(
                     query = """
                         subscription Test {
-                            delayedValue
+                            delayedValue(seconds: 5)
                         }
                     """.trimIndent()
                 )
@@ -226,14 +226,14 @@ class GraphQLTransportWsTest {
             client.subscription {
                 initConnection()
 
-                withTimeout(1.seconds + 500.milliseconds) {
+                withTimeout(5.seconds + 500.milliseconds) {
                     sendSerialized(subscribeRequest)
                     receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Next<Any>>()
                     receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Complete>()
                 }
 
                 assertFailsWith<TimeoutCancellationException> {
-                    withTimeout(1.seconds + 500.milliseconds) {
+                    withTimeout(5.seconds + 500.milliseconds) {
                         sendSerialized(subscribeRequest)
                         sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Complete(subscribeRequest.id))
 

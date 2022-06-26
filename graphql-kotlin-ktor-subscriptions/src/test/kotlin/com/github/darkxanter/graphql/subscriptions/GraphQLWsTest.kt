@@ -91,7 +91,7 @@ class GraphQLWsTest {
             payload = GraphQLRequestWS(
                 query = """
                         subscription Test {
-                            delayedValue
+                            delayedValue(seconds: 5)
                         }
                     """.trimIndent()
             )
@@ -99,7 +99,7 @@ class GraphQLWsTest {
         client.subscription {
             initConnection()
 
-            withTimeout(1.seconds + 500.milliseconds) {
+            withTimeout(5.seconds + 500.milliseconds) {
                 sendSerialized(subscribeRequest)
                 receiveDeserialized<GraphQLWsSubscriptionOperationMessage>()
                 receiveDeserialized<GraphQLWsSubscriptionOperationMessage>()
@@ -117,7 +117,7 @@ class GraphQLWsTest {
                     assertEquals(GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE.type, response.type)
                 }
 
-                withTimeout(1.seconds + 500.milliseconds) {
+                withTimeout(5.seconds + 500.milliseconds) {
                     val response = receiveDeserialized<GraphQLWsSubscriptionOperationMessage>()
                     println(response)
                     assert(false) {
