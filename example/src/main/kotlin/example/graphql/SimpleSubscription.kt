@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory
 import kotlin.random.Random
 import kotlin.time.Duration.Companion.seconds
 
+@Suppress("MagicNumber")
 class SimpleSubscription : Subscription {
 
     private val logger: Logger = LoggerFactory.getLogger(SimpleSubscription::class.java)
@@ -27,6 +28,12 @@ class SimpleSubscription : Subscription {
             count++
             delay(interval.inWholeMilliseconds)
         }
+    }
+
+    @GraphQLDescription("Returns a delayed value")
+    fun delayedValue(seconds: Int = 1) = flow {
+        delay(seconds.seconds)
+        emit(42)
     }
 
     @GraphQLDescription("Returns a single value")
@@ -57,13 +64,13 @@ class SimpleSubscription : Subscription {
         .map {
             val value = Random.nextInt()
             if (value % 2 == 0) {
-                throw Exception("Value is even $value")
+                error("Value is even $value")
             } else value
         }
 
     @GraphQLDescription("Returns one value then an error")
     fun singleValueThenError(): Flow<Int> = flowOf(1, 2)
-        .map { if (it == 2) throw Exception("Second value") else it }
+        .map { if (it == 2) error("Second value") else it }
 
     @GraphQLDescription("Returns stream of errors")
     fun flowOfErrors(): Flow<DataFetcherResult<String?>> {

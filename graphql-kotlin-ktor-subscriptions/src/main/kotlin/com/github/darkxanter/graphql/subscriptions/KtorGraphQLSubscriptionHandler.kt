@@ -2,8 +2,6 @@ package com.github.darkxanter.graphql.subscriptions
 
 import com.expediagroup.graphql.server.execution.DataLoaderRegistryFactory
 import com.expediagroup.graphql.server.extensions.toExecutionInput
-import com.expediagroup.graphql.server.extensions.toGraphQLError
-import com.expediagroup.graphql.server.extensions.toGraphQLKotlinType
 import com.expediagroup.graphql.server.extensions.toGraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLRequest
 import com.expediagroup.graphql.server.types.GraphQLResponse
@@ -13,7 +11,6 @@ import graphql.ExecutionInput
 import graphql.ExecutionResult
 import graphql.GraphQL
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
@@ -54,19 +51,7 @@ public open class KtorGraphQLSubscriptionHandler(
         @Suppress("UNCHECKED_CAST")
         return when (data) {
             is Flow<*> -> (data as Flow<ExecutionResult>).map { result -> result.toGraphQLResponse() }
-                .catch { throwable ->
-                    val error = throwable.toGraphQLError()
-                    emit(GraphQLResponse<Any?>(errors = listOf(error.toGraphQLKotlinType())))
-                }
-            else -> {
-                val response = try {
-                    executionResult.toGraphQLResponse()
-                } catch (e: Exception) {
-                    val error = e.toGraphQLError()
-                    GraphQLResponse<Any?>(errors = listOf(error.toGraphQLKotlinType()))
-                }
-                flowOf(response)
-            }
+            else -> flowOf(executionResult.toGraphQLResponse())
         }
     }
 }

@@ -21,10 +21,14 @@ import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.ktor.server.websocket.WebSockets
 import io.ktor.util.KtorDsl
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.take
 import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 val defaultConnectionInitWaitTimeout = 500.milliseconds
 
@@ -75,8 +79,34 @@ class HelloQueryService : Query {
 }
 
 class SimpleSubscription : Subscription {
-    @GraphQLDescription("Returns a single value")
-    fun singleValueSubscription(): Flow<Int> = flowOf(1)
+    private fun flowTicker(interval: kotlin.time.Duration) = flow {
+        var count = 1
+        while (true) {
+            emit(count)
+            count++
+            delay(interval)
+        }
+    }
+
+    @GraphQLDescription("Returns a random number every second")
+    fun counter(limit: Int? = null): Flow<Int> {
+        val flow = flowTicker(1.seconds)
+        return if (limit != null) {
+            flow.take(limit)
+        } else {
+            flow
+        }
+    }
+
+
+    @GraphQLDescription("Returns a delayed value")
+    fun delayedValue() = flow {
+        delay(1.seconds)
+        emit(42)
+    }
+
+    @GraphQLDescription("Returns two values")
+    fun twoValues(): Flow<Int> = flowOf(1, 2)
 
     @GraphQLDescription("Returns one value then an error")
     fun singleValueThenError(): Flow<Int> = flowOf(1, 2)

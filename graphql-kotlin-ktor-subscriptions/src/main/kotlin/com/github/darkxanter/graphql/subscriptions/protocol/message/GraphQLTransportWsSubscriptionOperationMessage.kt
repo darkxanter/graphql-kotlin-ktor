@@ -123,9 +123,9 @@ public sealed interface GraphQLTransportWsSubscriptionOperationMessage : Subscri
      * After all results have been emitted, the Complete message will follow indicating stream completion.
      */
     @JsonTypeName("next")
-    public data class Next(
+    public data class Next<T>(
         override val id: String,
-        val payload: GraphQLResponse<*>,
+        val payload: GraphQLResponse<T>,
     ) : GraphQLTransportWsSubscriptionOperationMessage, OperationMessageId
 
     /**

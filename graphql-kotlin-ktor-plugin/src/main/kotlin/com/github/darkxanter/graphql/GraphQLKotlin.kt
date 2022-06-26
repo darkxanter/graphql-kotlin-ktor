@@ -144,6 +144,7 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
             objectMapper = subscriptionObjectMapper,
             subscriptionHooks = subscriptionHooks,
             connectionInitWaitTimeout = subscriptionConnectionInitWaitTimeout,
+            subscriptionCoroutineContext = subscriptionCoroutineContext,
         )
 
         val graphQLWsSubscriptionHandler = GraphQLWsSubscriptionWebSocketHandler(
@@ -155,8 +156,8 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         )
 
         application.routing {
-            graphQLWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint, subscriptionCoroutineContext)
-            graphQLTransportWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint, subscriptionCoroutineContext)
+            graphQLWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint)
+            graphQLTransportWsSubscriptionHandler.webSocket(this, subscriptionsEndpoint)
         }
     }
 }

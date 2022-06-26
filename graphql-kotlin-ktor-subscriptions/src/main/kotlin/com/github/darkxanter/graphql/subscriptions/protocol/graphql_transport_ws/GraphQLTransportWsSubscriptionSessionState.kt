@@ -5,14 +5,28 @@ import com.github.darkxanter.graphql.subscriptions.protocol.message.id
 import io.ktor.websocket.CloseReason
 import io.ktor.websocket.WebSocketSession
 import io.ktor.websocket.close
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.launch
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.time.Duration
 
-internal class GraphQLTransportWsSubscriptionSessionState {
+internal class GraphQLTransportWsSubscriptionSessionState(
+    private val connectionInitWaitTimeout: Duration,
+) {
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
+    /** New uninitialized sessions */
+    private val pendingSessions = ConcurrentHashMap<WebSocketSession, Job>()
+
+    /** Initialized sessions */
     private val sessions = ConcurrentHashMap.newKeySet<WebSocketSession>()
 
     /** Sessions are saved by web socket session id */
@@ -24,7 +38,20 @@ internal class GraphQLTransportWsSubscriptionSessionState {
     /** The graphQL context is saved by web socket session id */
     private val cachedGraphQLContext = ConcurrentHashMap<WebSocketSession, Map<*, Any>>()
 
-    fun initialized(session: WebSocketSession) = sessions.add(session)
+    fun newConnection(session: WebSocketSession) {
+        pendingSessions[session] = scope.launch {
+            delay(connectionInitWaitTimeout)
+            terminateSession(session, CloseReasons.connectionInitTimeout)
+            pendingSessions.remove(session)
+        }
+    }
+
+    fun initialized(session: WebSocketSession): Boolean {
+        pendingSessions[session]?.cancel()
+        pendingSessions.remove(session)
+        return sessions.add(session)
+    }
+
     fun isInitialized(session: WebSocketSession) = sessions.contains(session)
 
     /**
@@ -79,27 +106,26 @@ internal class GraphQLTransportWsSubscriptionSessionState {
         operationMessage: GraphQLTransportWsSubscriptionOperationMessage
     ): Flow<GraphQLTransportWsSubscriptionOperationMessage> {
         return getCompleteMessage(operationMessage)
-            .onCompletion { removeActiveOperation(session, operationMessage.id) }
+            .onCompletion {
+                removeActiveOperation(session, operationMessage.id)
+            }
     }
 
     /**
-     * Stop the subscription sending data and send the [GraphQLTransportWsSubscriptionOperationMessage.Complete] message.
+     * Stop the subscription sending data.
+     *
      * Does NOT terminate the session.
      */
     fun stopOperation(
         session: WebSocketSession,
         operationMessage: GraphQLTransportWsSubscriptionOperationMessage
-    ): Flow<GraphQLTransportWsSubscriptionOperationMessage> {
-        return getCompleteMessage(operationMessage)
-            .onCompletion { removeActiveOperation(session, operationMessage.id) }
+    ) {
+        removeActiveOperation(session, operationMessage.id)
     }
 
     private fun getCompleteMessage(operationMessage: GraphQLTransportWsSubscriptionOperationMessage): Flow<GraphQLTransportWsSubscriptionOperationMessage> {
-        val id = operationMessage.id
-        if (id != null) {
-            return flowOf(GraphQLTransportWsSubscriptionOperationMessage.Complete(id))
-        }
-        return emptyFlow()
+        val id = operationMessage.id ?: return emptyFlow()
+        return flowOf(GraphQLTransportWsSubscriptionOperationMessage.Complete(id))
     }
 
     /**
@@ -124,6 +150,8 @@ internal class GraphQLTransportWsSubscriptionSessionState {
         session: WebSocketSession,
         reason: CloseReason = CloseReason(CloseReason.Codes.NORMAL, ""),
     ) {
+        pendingSessions[session]?.cancel()
+        pendingSessions.remove(session)
         sessions.remove(session)
         activeOperations[session]?.forEach { (_, subscription) -> subscription.cancel() }
         activeOperations.remove(session)
