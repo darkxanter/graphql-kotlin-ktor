@@ -1,5 +1,8 @@
 # GraphQL Kotlin Ktor Plugin
 
+[![Continuous Integration](https://github.com/darkxanter/graphql-kotlin-ktor/workflows/ci/badge.svg)](https://github.com/darkxanter/graphql-kotlin-ktor/actions?query=workflow%3A%22ci%22)
+![Maven Central](https://img.shields.io/maven-central/v/io.github.darkxanter.graphql/graphql-kotlin-ktor-plugin)
+
 Ktor plugin for [graphql-kotlin](https://github.com/ExpediaGroup/graphql-kotlin).
 
 Also provides subscriptions implementation for protocols `graphql-ws` and `graphql-transport-ws`.
@@ -14,7 +17,7 @@ Also provides subscriptions implementation for protocols `graphql-ws` and `graph
 
 ```kotlin
 dependencies {
-    implementation("io.github.darkxanter.graphql", "graphql-kotlin-ktor-plugin", "0.1.0")
+    implementation("io.github.darkxanter.graphql", "graphql-kotlin-ktor-plugin", "<last-version>")
 }
 ```
 
