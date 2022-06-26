@@ -7,6 +7,8 @@ public object CloseReasons {
     public val unauthorized: CloseReason = CloseReason(4401, "Unauthorized")
     public val connectionInitTimeout: CloseReason = CloseReason(4408, "Connection initialisation timeout")
     public val tooManyInitRequests: CloseReason = CloseReason(4429, "Too many initialisation requests")
+    public val pongTimeout: CloseReason = CloseReason(4400, "Pong timeout")
+
     public fun subscriptionAlreadyExists(id: String): CloseReason {
         return CloseReason(4409, "Subscriber for $id already exists")
     }

@@ -2,6 +2,7 @@ package com.github.darkxanter.graphql.subscriptions
 
 import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLRequestWS
 import com.github.darkxanter.graphql.subscriptions.protocol.message.GraphQLTransportWsSubscriptionOperationMessage
+import io.ktor.client.plugins.websocket.DefaultClientWebSocketSession
 import io.ktor.client.plugins.websocket.receiveDeserialized
 import io.ktor.client.plugins.websocket.sendSerialized
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -12,18 +13,23 @@ import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 @ExperimentalCoroutinesApi
 class GraphQLTransportWsTest {
+    private suspend fun DefaultClientWebSocketSession.initConnection() {
+        withTimeout(500.milliseconds) {
+            sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
+            receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
+        }
+    }
+
     @Test
     fun `connection init`() = testApp { client ->
         client.subscription {
-            withTimeout(500.milliseconds) {
-                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
-            }
+            initConnection()
         }
     }
 
@@ -87,13 +93,46 @@ class GraphQLTransportWsTest {
         }
     }
 
+
+    @Test
+    fun `server ping`() = testApp(pingInterval = 1.seconds) { client ->
+        client.subscription {
+            initConnection()
+
+            withTimeout(250.milliseconds) {
+                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Ping>()
+                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Pong())
+            }
+
+            withTimeout(1.seconds + 100.milliseconds) {
+                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Ping>()
+                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Pong())
+            }
+
+            delay(600.milliseconds)
+            assertTrue(!incoming.isClosedForReceive)
+
+            withTimeout(1.seconds + 100.milliseconds) {
+                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Ping>()
+            }
+
+            delay(600.milliseconds)
+            assertTrue(incoming.isClosedForReceive)
+
+            withTimeout(200.milliseconds) {
+                val reason = closeReason.await()
+                assertEquals(4400, reason?.code)
+                assertEquals("Pong timeout", reason?.message)
+            }
+        }
+    }
+
     @Test
     fun `client ping`() = testApp { client ->
         client.subscription {
-            withTimeout(500.milliseconds) {
-                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
+            initConnection()
 
+            withTimeout(500.milliseconds) {
                 sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Ping())
                 receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Pong>()
             }
@@ -118,10 +157,7 @@ class GraphQLTransportWsTest {
         )
 
         client.subscription {
-            withTimeout(500.milliseconds) {
-                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
-            }
+            initConnection()
             sendSerialized(subscribeRequest)
 
             withTimeout(500.milliseconds) {
@@ -159,10 +195,9 @@ class GraphQLTransportWsTest {
                 )
             )
             client.subscription {
-                withTimeout(500.milliseconds) {
-                    sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                    receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
+                initConnection()
 
+                withTimeout(500.milliseconds) {
                     sendSerialized(subscribeRequest)
                     receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Next<Any>>()
                     sendSerialized(subscribeRequest)
@@ -189,10 +224,7 @@ class GraphQLTransportWsTest {
                 )
             )
             client.subscription {
-                withTimeout(500.milliseconds) {
-                    sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                    receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
-                }
+                initConnection()
 
                 withTimeout(1.seconds + 500.milliseconds) {
                     sendSerialized(subscribeRequest)
@@ -230,10 +262,7 @@ class GraphQLTransportWsTest {
         )
 
         client.subscription {
-            withTimeout(500.milliseconds) {
-                sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.ConnectionInit())
-                receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck>()
-            }
+            initConnection()
             sendSerialized(subscribeRequest)
 
             withTimeout(500.milliseconds) {

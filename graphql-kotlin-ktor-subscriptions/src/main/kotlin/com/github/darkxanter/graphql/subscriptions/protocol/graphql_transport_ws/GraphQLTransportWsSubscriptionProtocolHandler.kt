@@ -17,6 +17,7 @@ import io.ktor.server.websocket.WebSocketServerSession
 import io.ktor.websocket.Frame
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
@@ -51,6 +52,7 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO,
 ) : SubscriptionProtocolHandler<GraphQLTransportWsSubscriptionOperationMessage> {
     private val scope = CoroutineScope(subscriptionCoroutineContext + SupervisorJob())
+    private var pongWaitJob: Job? = null
 
     private val sessionState = GraphQLTransportWsSubscriptionSessionState(connectionInitWaitTimeout)
     private val logger = LoggerFactory.getLogger(GraphQLTransportWsSubscriptionProtocolHandler::class.java)
@@ -81,7 +83,8 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
                     GraphQLTransportWsSubscriptionOperationMessage.Pong()
                 )
                 is GraphQLTransportWsSubscriptionOperationMessage.Pong -> {
-                    emptyFlow()
+                    pongWaitJob?.cancel()
+                    return
                 }
                 is GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck,
                 is GraphQLTransportWsSubscriptionOperationMessage.Next<*>,
@@ -125,7 +128,12 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
             return flow {
                 while (true) {
                     emit(GraphQLTransportWsSubscriptionOperationMessage.Ping())
-                    delay(pingInterval.inWholeMilliseconds)
+                    pongWaitJob?.cancel()
+                    pongWaitJob = scope.launch {
+                        delay(pingInterval / 2)
+                        sessionState.terminateSession(session, CloseReasons.pongTimeout)
+                    }
+                    delay(pingInterval)
                 }
             }.onStart {
                 sessionState.saveKeepAliveSubscription(session, currentCoroutineContext().job)

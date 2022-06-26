@@ -27,14 +27,18 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.take
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 val defaultConnectionInitWaitTimeout = 500.milliseconds
 
 @KtorDsl
-fun testApp(block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit) = testApplication {
-    application { testModule() }
+fun testApp(
+    pingInterval: Duration = Duration.ZERO,
+    block: suspend ApplicationTestBuilder.(client: HttpClient) -> Unit
+) = testApplication {
+    application { testModule(pingInterval) }
     val client = createClient {
         install(io.ktor.client.plugins.contentnegotiation.ContentNegotiation) {
             jackson()
@@ -54,7 +58,9 @@ suspend fun HttpClient.subscription(
     header(HttpHeaders.SecWebSocketProtocol, protocol)
 }, block)
 
-fun Application.testModule() {
+fun Application.testModule(
+    pingInterval: Duration = Duration.ZERO
+) {
     install(ContentNegotiation) {
         jackson()
     }
@@ -69,6 +75,8 @@ fun Application.testModule() {
             SimpleSubscription()
         )
 
+        subscriptionPingInterval = pingInterval
+
         subscriptionConnectionInitWaitTimeout = defaultConnectionInitWaitTimeout
     }
 }
@@ -79,7 +87,7 @@ class HelloQueryService : Query {
 }
 
 class SimpleSubscription : Subscription {
-    private fun flowTicker(interval: kotlin.time.Duration) = flow {
+    private fun flowTicker(interval: Duration) = flow {
         var count = 1
         while (true) {
             emit(count)
