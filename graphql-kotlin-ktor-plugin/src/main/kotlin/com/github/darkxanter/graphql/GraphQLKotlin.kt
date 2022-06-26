@@ -130,12 +130,14 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         val subscriptionObjectMapper = config.subscriptionObjectMapper
         val subscriptionCoroutineContext = config.subscriptionCoroutineContext
         val subscriptionConnectionInitWaitTimeout = config.subscriptionConnectionInitWaitTimeout
+        val subscriptionPingInterval = config.subscriptionPingInterval
 
         val graphQLWsSubscriptionProtocolHandler = GraphQLWsSubscriptionProtocolHandler(
             contextFactory = config.contextFactory,
             subscriptionHandler = KtorGraphQLSubscriptionHandler(graphQL, dataLoaderRegistryFactory),
             objectMapper = subscriptionObjectMapper,
             subscriptionHooks = subscriptionHooks,
+            pingInterval = subscriptionPingInterval,
         )
 
         val graphQLTransportWsSubscriptionProtocolHandler = GraphQLTransportWsSubscriptionProtocolHandler(
@@ -145,6 +147,7 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
             subscriptionHooks = subscriptionHooks,
             connectionInitWaitTimeout = subscriptionConnectionInitWaitTimeout,
             subscriptionCoroutineContext = subscriptionCoroutineContext,
+            pingInterval = subscriptionPingInterval,
         )
 
         val graphQLWsSubscriptionHandler = GraphQLWsSubscriptionWebSocketHandler(
@@ -170,8 +173,6 @@ public class GraphQLKotlinConfiguration {
         supportedPackages = emptyList(),
         hooks = FlowSubscriptionSchemaGeneratorHooks()
     )
-
-    public var subscriptionConnectionInitWaitTimeout: Duration = 3.seconds
 
     public fun schemaGeneratorConfig(configure: SchemaGeneratorConfigMutable.() -> Unit) {
         schemaGeneratorConfig = SchemaGeneratorConfigMutable(
@@ -204,6 +205,14 @@ public class GraphQLKotlinConfiguration {
     public var subscriptionHooks: ApolloSubscriptionHooks = SimpleSubscriptionHooks()
     public var subscriptionObjectMapper: ObjectMapper = jacksonObjectMapper()
     public var subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO
+    /**
+     * Server ping interval
+     * */
+    public var subscriptionPingInterval: Duration = Duration.ZERO
+    /**
+     * Connection initialisation timeout for `graphql-transport-ws` protocol
+     * */
+    public var subscriptionConnectionInitWaitTimeout: Duration = 3.seconds
 
     public var requestParser: KtorGraphQLRequestParser = DefaultKtorGraphQLRequestParser()
     public fun requestParser(handler: KtorGraphQLRequestParserHandler) {

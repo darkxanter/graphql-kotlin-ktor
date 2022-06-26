@@ -53,7 +53,11 @@ internal class GraphQLWsSubscriptionSessionState {
      * This will override values without cancelling the subscription, so it is the responsibility of the consumer to cancel.
      * These messages will be stopped on [stopOperation].
      */
-    fun saveOperation(session: WebSocketSession, operationMessage: GraphQLWsSubscriptionOperationMessage, subscription: Job) {
+    fun saveOperation(
+        session: WebSocketSession,
+        operationMessage: GraphQLWsSubscriptionOperationMessage,
+        subscription: Job
+    ) {
         val id = operationMessage.id
         if (id != null) {
             val operationsForSession: ConcurrentHashMap<String, Job> =
@@ -87,16 +91,13 @@ internal class GraphQLWsSubscriptionSessionState {
     }
 
     private fun getCompleteMessage(operationMessage: GraphQLWsSubscriptionOperationMessage): Flow<GraphQLWsSubscriptionOperationMessage> {
-        val id = operationMessage.id
-        if (id != null) {
-            return flowOf(
-                GraphQLWsSubscriptionOperationMessage(
-                    type = GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE.type,
-                    id = id
-                )
+        val id = operationMessage.id ?: return emptyFlow()
+        return flowOf(
+            GraphQLWsSubscriptionOperationMessage(
+                type = GraphQLWsSubscriptionOperationMessage.ServerMessages.GQL_COMPLETE.type,
+                id = id
             )
-        }
-        return emptyFlow()
+        )
     }
 
     /**
@@ -131,6 +132,9 @@ internal class GraphQLWsSubscriptionSessionState {
     /**
      * Looks up the operation for the client, to check if it already exists
      */
-    fun doesOperationExist(session: WebSocketSession, operationMessage: GraphQLWsSubscriptionOperationMessage): Boolean =
+    fun doesOperationExist(
+        session: WebSocketSession,
+        operationMessage: GraphQLWsSubscriptionOperationMessage
+    ): Boolean =
         activeOperations[session]?.containsKey(operationMessage.id) ?: false
 }

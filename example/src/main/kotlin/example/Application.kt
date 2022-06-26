@@ -11,6 +11,7 @@ import io.ktor.server.netty.Netty
 import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.websocket.WebSockets
+import kotlin.time.Duration.Companion.seconds
 
 fun main() {
     embeddedServer(Netty, port = 4000, host = "0.0.0.0") {
@@ -37,6 +38,7 @@ fun Application.configureGraphQLModule() {
             SimpleSubscription()
         )
         subscriptionHooks = SubscriptionHooks()
+        subscriptionPingInterval = 30.seconds
 
         schemaGeneratorConfig {
             supportedPackages = listOf("example.graphql")
