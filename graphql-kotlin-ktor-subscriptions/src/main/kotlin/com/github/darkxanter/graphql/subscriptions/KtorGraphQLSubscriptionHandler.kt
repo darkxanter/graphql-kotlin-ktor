@@ -1,6 +1,6 @@
 package com.github.darkxanter.graphql.subscriptions
 
-import com.expediagroup.graphql.server.execution.DataLoaderRegistryFactory
+import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.server.extensions.toExecutionInput
 import com.expediagroup.graphql.server.extensions.toGraphQLResponse
 import com.expediagroup.graphql.server.types.GraphQLRequest
@@ -19,7 +19,7 @@ import kotlinx.coroutines.flow.map
  */
 public open class KtorGraphQLSubscriptionHandler(
     private val graphQL: GraphQL,
-    private val dataLoaderRegistryFactory: DataLoaderRegistryFactory? = null
+    private val dataLoaderRegistryFactory: KotlinDataLoaderRegistryFactory? = null
 ) {
     public fun executeSubscription(
         graphQLRequest: GraphQLRequest,

@@ -1,5 +1,7 @@
 package com.github.darkxanter.graphql
 
+import com.expediagroup.graphql.dataloader.KotlinDataLoader
+import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
 import com.expediagroup.graphql.generator.SchemaGeneratorConfig
 import com.expediagroup.graphql.generator.TopLevelNames
 import com.expediagroup.graphql.generator.TopLevelObject
@@ -11,13 +13,10 @@ import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorH
 import com.expediagroup.graphql.generator.hooks.NoopSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.hooks.SchemaGeneratorHooks
 import com.expediagroup.graphql.generator.toSchema
-import com.expediagroup.graphql.server.execution.DataLoaderRegistryFactory
-import com.expediagroup.graphql.server.execution.DefaultDataLoaderRegistryFactory
 import com.expediagroup.graphql.server.execution.GraphQLContextFactory
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.expediagroup.graphql.server.execution.GraphQLRequestParser
 import com.expediagroup.graphql.server.execution.GraphQLServer
-import com.expediagroup.graphql.server.execution.KotlinDataLoader
 import com.expediagroup.graphql.server.operations.Mutation
 import com.expediagroup.graphql.server.operations.Query
 import com.expediagroup.graphql.server.operations.Subscription
@@ -70,8 +69,8 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
         subscriptions = config.subscriptions.toTopLevelObjects(),
     )
 
-    public val dataLoaderRegistryFactory: DataLoaderRegistryFactory =
-        DefaultDataLoaderRegistryFactory(config.dataLoaders)
+    public val dataLoaderRegistryFactory: KotlinDataLoaderRegistryFactory =
+        KotlinDataLoaderRegistryFactory(config.dataLoaders)
 
     public val graphQL: GraphQL = GraphQL
         .newGraphQL(graphQLSchema)
@@ -172,10 +171,13 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
 public class GraphQLKotlinConfiguration {
     /** List of GraphQl queries */
     public var queries: List<Query> = emptyList()
+
     /** List of GraphQl mutations */
     public var mutations: List<Mutation> = emptyList()
+
     /** List of GraphQl subscriptions */
     public var subscriptions: List<Subscription> = emptyList()
+
     /** List of GraphQl data loaders */
     public var dataLoaders: List<KotlinDataLoader<*, *>> = emptyList()
 
@@ -198,7 +200,7 @@ public class GraphQLKotlinConfiguration {
 
     public fun generateContextMap(block: GenerateContextMap) {
         contextFactory = object : ApplicationCallGraphQLContextFactory {
-            override suspend fun generateContextMap(request: ApplicationCall): Map<*, Any>? = block(request)
+            override suspend fun generateContextMap(request: ApplicationCall): Map<*, Any> = block(request)
         }
     }
 
@@ -218,16 +220,20 @@ public class GraphQLKotlinConfiguration {
     public var subscriptionHooks: ApolloSubscriptionHooks = SimpleSubscriptionHooks()
     public var subscriptionObjectMapper: ObjectMapper = jacksonObjectMapper()
     public var subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO
+
     /**
      * Server ping interval
      * */
     public var subscriptionPingInterval: Duration = Duration.ZERO
+
     /**
      * Connection initialisation timeout for `graphql-transport-ws` protocol
      * */
     public var subscriptionConnectionInitWaitTimeout: Duration = 3.seconds
+
     /** GraphQL request parser */
     public var requestParser: KtorGraphQLRequestParser = DefaultKtorGraphQLRequestParser()
+
     /** GraphQL request parser */
     public fun requestParser(handler: KtorGraphQLRequestParserHandler) {
         requestParser = object : KtorGraphQLRequestParser {
@@ -257,6 +263,7 @@ public class GraphQLKotlinConfiguration {
             ?.replace("\${subscriptionsEndpoint}", subscriptionsEndpoint)
             ?: throw IllegalStateException("graphql-playground.html cannot be found in the classpath")
     }
+
     /** GraphQL playground */
     public fun buildPlaygroundHtml(block: KtorGraphQLBuildPlaygroundHtml) {
         buildPlaygroundHtml = block
@@ -293,7 +300,7 @@ public class GraphQLKotlinConfiguration {
 
 public typealias KtorGraphQLServer = GraphQLServer<ApplicationCall>
 public typealias KtorGraphQLRequestParser = GraphQLRequestParser<ApplicationCall>
-public typealias GenerateContextMap = (request: ApplicationCall) -> Map<Any, Any>?
+public typealias GenerateContextMap = (request: ApplicationCall) -> Map<Any, Any>
 public typealias KtorGraphQLCallHandler = suspend (graphQLServer: KtorGraphQLServer, call: ApplicationCall) -> Unit
 public typealias KtorGraphQLRequestParserHandler = suspend (request: ApplicationCall) -> GraphQLServerRequest
 public typealias KtorGraphQLBuildPlaygroundHtml = suspend (graphQLEndpoint: String, subscriptionsEndpoint: String) -> String
