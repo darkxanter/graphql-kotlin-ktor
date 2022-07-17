@@ -10,4 +10,5 @@
     <logger name="io.netty" level="INFO"/>
     <logger name="graphql.execution" level="INFO"/>
     <logger name="notprivacysafe" level="WARN"/>
+    <logger name="graphql.GraphQL" level="WARN"/>
 </configuration>

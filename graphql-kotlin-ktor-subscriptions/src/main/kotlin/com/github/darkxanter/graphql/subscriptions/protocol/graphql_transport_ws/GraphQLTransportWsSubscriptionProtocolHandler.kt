@@ -41,7 +41,6 @@ import kotlin.time.Duration
  *
  * https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
  */
-// TODO implement socket close for duplicated operations
 public class GraphQLTransportWsSubscriptionProtocolHandler(
     private val contextFactory: GraphQLContextFactory<*, ApplicationCall>,
     private val subscriptionHandler: KtorGraphQLSubscriptionHandler,
@@ -104,7 +103,6 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     private suspend fun Flow<GraphQLTransportWsSubscriptionOperationMessage>.sendMessages(session: WebSocketServerSession) {
         collect { message ->
             val response = objectMapper.writeValueAsString(message)
-            logger.trace("response $response")
             session.send(Frame.Text(response))
         }
     }

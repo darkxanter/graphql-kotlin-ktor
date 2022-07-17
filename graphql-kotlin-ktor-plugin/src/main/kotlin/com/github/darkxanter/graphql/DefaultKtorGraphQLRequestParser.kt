@@ -8,7 +8,7 @@ import io.ktor.server.request.receive
 import java.io.IOException
 
 /**
- * Default logic for how Ktor parses the incoming [ApplicationRequest] into the [GraphQLServerRequest]
+ * Default logic for how Ktor parses the incoming [ApplicationCall] into the [GraphQLServerRequest]
  */
 public class DefaultKtorGraphQLRequestParser : GraphQLRequestParser<ApplicationCall> {
     override suspend fun parseRequest(request: ApplicationCall): GraphQLServerRequest = try {

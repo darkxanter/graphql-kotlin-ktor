@@ -52,12 +52,16 @@ import kotlin.time.Duration
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration.Companion.seconds
 
+/**
+ * GraphQL Kotlin Ktor [Plugin]
+ * */
 @Suppress("MemberVisibilityCanBePrivate")
 public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
     public val graphqlEndpoint: String = config.endpoints.graphql
     public val sdlEndpoint: String = config.endpoints.sdl
     public val playgroundEndpoint: String = config.endpoints.playground
     public val subscriptionsEndpoint: String = config.endpoints.subscriptions
+    public val buildPlaygroundHtml: KtorGraphQLBuildPlaygroundHtml = config.buildPlaygroundHtml
 
     public val graphQLSchema: GraphQLSchema = toSchema(
         config = config.schemaGeneratorConfig,
@@ -166,22 +170,28 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
 }
 
 public class GraphQLKotlinConfiguration {
+    /** List of GraphQl queries */
     public var queries: List<Query> = emptyList()
+    /** List of GraphQl mutations */
     public var mutations: List<Mutation> = emptyList()
+    /** List of GraphQl subscriptions */
     public var subscriptions: List<Subscription> = emptyList()
+    /** List of GraphQl data loaders */
+    public var dataLoaders: List<KotlinDataLoader<*, *>> = emptyList()
+
+    /** Schema generation configuration */
     public var schemaGeneratorConfig: SchemaGeneratorConfig = SchemaGeneratorConfig(
         supportedPackages = emptyList(),
         hooks = FlowSubscriptionSchemaGeneratorHooks()
     )
 
+    /** Schema generation configuration builder */
     public fun schemaGeneratorConfig(configure: SchemaGeneratorConfigMutable.() -> Unit) {
         schemaGeneratorConfig = SchemaGeneratorConfigMutable(
             supportedPackages = emptyList(),
             hooks = FlowSubscriptionSchemaGeneratorHooks()
         ).apply(configure)
     }
-
-    public var dataLoaders: List<KotlinDataLoader<*, *>> = emptyList()
 
     public var contextFactory: GraphQLContextFactory<*, ApplicationCall> =
         DefaultApplicationCallGraphQLContextFactory()
@@ -192,7 +202,10 @@ public class GraphQLKotlinConfiguration {
         }
     }
 
+    /** [Endpoints] configuration */
     public var endpoints: Endpoints = Endpoints()
+
+    /** [Endpoints] configuration builder */
     public inline fun endpoints(crossinline configure: Endpoints.() -> Unit) {
         endpoints.apply(configure)
     }
@@ -213,16 +226,17 @@ public class GraphQLKotlinConfiguration {
      * Connection initialisation timeout for `graphql-transport-ws` protocol
      * */
     public var subscriptionConnectionInitWaitTimeout: Duration = 3.seconds
-
+    /** GraphQL request parser */
     public var requestParser: KtorGraphQLRequestParser = DefaultKtorGraphQLRequestParser()
+    /** GraphQL request parser */
     public fun requestParser(handler: KtorGraphQLRequestParserHandler) {
         requestParser = object : KtorGraphQLRequestParser {
             override suspend fun parseRequest(request: ApplicationCall): GraphQLServerRequest = handler(request)
         }
     }
 
+    /** GraphQL call handler */
     public var callHandler: KtorGraphQLCallHandler = { graphQlServer, call ->
-        // Execute the query against the schema
         val result = graphQlServer.execute(call)
         if (result != null) {
             call.respond(result)
@@ -231,10 +245,24 @@ public class GraphQLKotlinConfiguration {
         }
     }
 
+    /** GraphQL call handler builder */
     public fun callHandler(handler: KtorGraphQLCallHandler) {
         callHandler = handler
     }
 
+    /** GraphQL playground */
+    public var buildPlaygroundHtml: KtorGraphQLBuildPlaygroundHtml = { graphQLEndpoint, subscriptionsEndpoint ->
+        Application::class.java.classLoader.getResource("graphql-playground.html")?.readText()
+            ?.replace("\${graphQLEndpoint}", graphQLEndpoint)
+            ?.replace("\${subscriptionsEndpoint}", subscriptionsEndpoint)
+            ?: throw IllegalStateException("graphql-playground.html cannot be found in the classpath")
+    }
+    /** GraphQL playground */
+    public fun buildPlaygroundHtml(block: KtorGraphQLBuildPlaygroundHtml) {
+        buildPlaygroundHtml = block
+    }
+
+    /** GraphQL endpoints */
     public class Endpoints {
         public var graphql: String = "graphql"
         public var sdl: String = "sdl"
@@ -268,12 +296,6 @@ public typealias KtorGraphQLRequestParser = GraphQLRequestParser<ApplicationCall
 public typealias GenerateContextMap = (request: ApplicationCall) -> Map<Any, Any>?
 public typealias KtorGraphQLCallHandler = suspend (graphQLServer: KtorGraphQLServer, call: ApplicationCall) -> Unit
 public typealias KtorGraphQLRequestParserHandler = suspend (request: ApplicationCall) -> GraphQLServerRequest
+public typealias KtorGraphQLBuildPlaygroundHtml = suspend (graphQLEndpoint: String, subscriptionsEndpoint: String) -> String
 
 private fun List<Any>.toTopLevelObjects() = map { TopLevelObject(it) }
-
-@Suppress("SameParameterValue")
-public fun buildPlaygroundHtml(graphQLEndpoint: String, subscriptionsEndpoint: String): String =
-    Application::class.java.classLoader.getResource("graphql-playground.html")?.readText()
-        ?.replace("\${graphQLEndpoint}", graphQLEndpoint)
-        ?.replace("\${subscriptionsEndpoint}", subscriptionsEndpoint)
-        ?: throw IllegalStateException("graphql-playground.html cannot be found in the classpath")
