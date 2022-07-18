@@ -95,7 +95,7 @@ class GraphQLTransportWsTest {
 
 
     @Test
-    fun `server ping`() = testApp(pingInterval = 1.seconds) { client ->
+    fun `server ping`() = testApp(pingInterval = 5.seconds) { client ->
         client.subscription {
             initConnection()
 
@@ -104,19 +104,19 @@ class GraphQLTransportWsTest {
                 sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Pong())
             }
 
-            withTimeout(1.seconds + 100.milliseconds) {
+            withTimeout(5.seconds + 100.milliseconds) {
                 receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Ping>()
                 sendSerialized(GraphQLTransportWsSubscriptionOperationMessage.Pong())
             }
 
-            delay(600.milliseconds)
+            delay(1.1.seconds)
             assertTrue(!incoming.isClosedForReceive)
 
-            withTimeout(1.seconds + 100.milliseconds) {
+            withTimeout(5.seconds + 100.milliseconds) {
                 receiveDeserialized<GraphQLTransportWsSubscriptionOperationMessage.Ping>()
             }
 
-            delay(600.milliseconds)
+            delay(1.1.seconds)
             assertTrue(incoming.isClosedForReceive)
 
             withTimeout(200.milliseconds) {
