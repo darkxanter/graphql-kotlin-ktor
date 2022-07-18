@@ -33,8 +33,10 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
 import org.slf4j.LoggerFactory
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.coroutines.CoroutineContext
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Implementation of the `graphql-transport-ws` protocol
@@ -48,12 +50,12 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
     private val subscriptionHooks: ApolloSubscriptionHooks,
     connectionInitWaitTimeout: Duration,
     private val pingInterval: Duration = Duration.ZERO,
-    subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO,
+    subscriptionCoroutineContext: CoroutineContext = Dispatchers.Unconfined,
 ) : SubscriptionProtocolHandler<GraphQLTransportWsSubscriptionOperationMessage> {
     private val scope = CoroutineScope(subscriptionCoroutineContext + SupervisorJob())
-    private var pongWaitJob: Job? = null
 
     private val sessionState = GraphQLTransportWsSubscriptionSessionState(connectionInitWaitTimeout)
+    private val pongs = ConcurrentHashMap<WebSocketServerSession, Job>()
     private val logger = LoggerFactory.getLogger(GraphQLTransportWsSubscriptionProtocolHandler::class.java)
 
     @Suppress("Detekt.TooGenericExceptionCaught")
@@ -82,7 +84,7 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
                     GraphQLTransportWsSubscriptionOperationMessage.Pong()
                 )
                 is GraphQLTransportWsSubscriptionOperationMessage.Pong -> {
-                    pongWaitJob?.cancel()
+                    pongs.remove(session)?.cancel()
                     return
                 }
                 is GraphQLTransportWsSubscriptionOperationMessage.ConnectionAck,
@@ -126,9 +128,9 @@ public class GraphQLTransportWsSubscriptionProtocolHandler(
             return flow {
                 while (true) {
                     emit(GraphQLTransportWsSubscriptionOperationMessage.Ping())
-                    pongWaitJob?.cancel()
-                    pongWaitJob = scope.launch {
-                        delay(pingInterval / 2)
+                    pongs.remove(session)?.cancel()
+                    pongs[session] = scope.launch {
+                        delay(1.seconds)
                         sessionState.terminateSession(session, CloseReasons.pongTimeout)
                     }
                     delay(pingInterval)

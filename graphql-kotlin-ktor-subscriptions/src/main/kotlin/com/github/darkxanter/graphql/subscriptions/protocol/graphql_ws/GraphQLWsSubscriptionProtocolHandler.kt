@@ -49,7 +49,7 @@ public class GraphQLWsSubscriptionProtocolHandler(
     private val objectMapper: ObjectMapper,
     private val subscriptionHooks: ApolloSubscriptionHooks,
     private val pingInterval: Duration = Duration.ZERO,
-    subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO,
+    subscriptionCoroutineContext: CoroutineContext = Dispatchers.Unconfined,
 ) : SubscriptionProtocolHandler<GraphQLWsSubscriptionOperationMessage> {
     private val scope = CoroutineScope(subscriptionCoroutineContext + SupervisorJob())
 

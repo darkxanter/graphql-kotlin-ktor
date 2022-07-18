@@ -21,7 +21,7 @@ import kotlin.time.Duration
 internal class GraphQLTransportWsSubscriptionSessionState(
     private val connectionInitWaitTimeout: Duration,
 ) {
-    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     /** New uninitialized sessions */
     private val pendingSessions = ConcurrentHashMap<WebSocketSession, Job>()

@@ -219,7 +219,7 @@ public class GraphQLKotlinConfiguration {
 
     public var subscriptionHooks: ApolloSubscriptionHooks = SimpleSubscriptionHooks()
     public var subscriptionObjectMapper: ObjectMapper = jacksonObjectMapper()
-    public var subscriptionCoroutineContext: CoroutineContext = Dispatchers.IO
+    public var subscriptionCoroutineContext: CoroutineContext = Dispatchers.Unconfined
 
     /**
      * Server ping interval
