@@ -53,6 +53,46 @@ import kotlin.time.Duration.Companion.seconds
 
 /**
  * GraphQL Kotlin Ktor [Plugin]
+ *
+ * Example:
+ * ```
+ * fun Application.configureGraphQLModule() {
+ *     install(ContentNegotiation) {
+ *         jackson()
+ *     }
+ *     install(WebSockets)
+ *     install(GraphQLKotlin) {
+ *         queries = listOf(
+ *             HelloQueryService(),
+ *         )
+ *         subscriptions = listOf(
+ *             SimpleSubscription()
+ *         )
+ *         subscriptionPingInterval = 30.seconds
+ *
+ *         schemaGeneratorConfig {
+ *             supportedPackages = listOf("example.graphql")
+ *         }
+ *
+ *         generateContextMap { request ->
+ *             val loggedInUser = User(
+ *                 email = "johndoe@example.com",
+ *                 firstName = "John",
+ *                 lastName = "Doe",
+ *             )
+ *
+ *             // Parse any headers from the Ktor request
+ *             val customHeader: String? = request.request.headers["my-custom-header"]
+ *
+ *             mapOf(
+ *                 "AuthorizedContext" to AuthorizedContext(loggedInUser, customHeader = customHeader)
+ *             )
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ *
  * */
 @Suppress("MemberVisibilityCanBePrivate")
 public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
