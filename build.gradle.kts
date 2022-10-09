@@ -2,13 +2,18 @@ plugins {
     id("io.github.gradle-nexus.publish-plugin")
 }
 
+println("version $version")
+
 allprojects {
     repositories {
         mavenCentral()
     }
 }
 
-println("version $version")
+//subprojects {
+//
+//}
+
 
 nexusPublishing {
     if (properties.containsKey("mavenCentralUser")) {

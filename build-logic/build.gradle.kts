@@ -20,9 +20,10 @@ dependencies {
     val properties = Properties()
     properties.load(rootDir.parentFile.resolve("gradle.properties").inputStream())
     val kotlinVersion: String by properties
+    val dokkaVersion: String by properties
 
     api("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-    api("org.jetbrains.dokka:dokka-gradle-plugin:$kotlinVersion")
+    api("org.jetbrains.dokka:dokka-gradle-plugin:$dokkaVersion")
 }
 
 tasks {
