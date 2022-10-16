@@ -2,6 +2,7 @@ package com.github.darkxanter.graphql
 
 import com.expediagroup.graphql.dataloader.KotlinDataLoader
 import com.expediagroup.graphql.dataloader.KotlinDataLoaderRegistryFactory
+import com.expediagroup.graphql.generator.SchemaGenerator
 import com.expediagroup.graphql.generator.SchemaGeneratorConfig
 import com.expediagroup.graphql.generator.TopLevelNames
 import com.expediagroup.graphql.generator.TopLevelObject
@@ -12,7 +13,6 @@ import com.expediagroup.graphql.generator.extensions.print
 import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.hooks.NoopSchemaGeneratorHooks
 import com.expediagroup.graphql.generator.hooks.SchemaGeneratorHooks
-import com.expediagroup.graphql.generator.toSchema
 import com.expediagroup.graphql.server.execution.GraphQLContextFactory
 import com.expediagroup.graphql.server.execution.GraphQLRequestHandler
 import com.expediagroup.graphql.server.execution.GraphQLRequestParser
@@ -23,6 +23,7 @@ import com.expediagroup.graphql.server.operations.Subscription
 import com.expediagroup.graphql.server.types.GraphQLServerRequest
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.github.darkxanter.graphql.GraphQLKotlin.Plugin
 import com.github.darkxanter.graphql.subscriptions.ApolloSubscriptionHooks
 import com.github.darkxanter.graphql.subscriptions.KtorGraphQLSubscriptionHandler
 import com.github.darkxanter.graphql.subscriptions.SimpleSubscriptionHooks
@@ -47,8 +48,9 @@ import io.ktor.server.routing.post
 import io.ktor.server.routing.routing
 import io.ktor.util.AttributeKey
 import kotlinx.coroutines.Dispatchers
-import kotlin.time.Duration
 import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KType
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
 /**
@@ -102,12 +104,19 @@ public class GraphQLKotlin(private val config: GraphQLKotlinConfiguration) {
     public val subscriptionsEndpoint: String = config.endpoints.subscriptions
     public val buildPlaygroundHtml: KtorGraphQLBuildPlaygroundHtml = config.buildPlaygroundHtml
 
-    public val graphQLSchema: GraphQLSchema = toSchema(
-        config = config.schemaGeneratorConfig,
-        queries = config.queries.toTopLevelObjects(),
-        mutations = config.mutations.toTopLevelObjects(),
-        subscriptions = config.subscriptions.toTopLevelObjects(),
-    )
+    public val graphQLSchema: GraphQLSchema by lazy {
+        val generator = SchemaGenerator(config.schemaGeneratorConfig)
+        generator.use {
+            it.generateSchema(
+                queries = config.queries.toTopLevelObjects(),
+                mutations = config.mutations.toTopLevelObjects(),
+                subscriptions = config.subscriptions.toTopLevelObjects(),
+                schemaObject = config.schemaObject,
+                additionalTypes = config.additionalTypes,
+                additionalInputTypes = config.additionalInputTypes,
+            )
+        }
+    }
 
     public val dataLoaderRegistryFactory: KotlinDataLoaderRegistryFactory =
         KotlinDataLoaderRegistryFactory(config.dataLoaders)
@@ -217,6 +226,11 @@ public class GraphQLKotlinConfiguration {
 
     /** List of GraphQl subscriptions */
     public var subscriptions: List<Subscription> = emptyList()
+    /** optional [TopLevelObject] reference to the annotated schema class */
+    public var schemaObject: TopLevelObject? = null
+
+    public var additionalTypes: Set<KType> = emptySet()
+    public var additionalInputTypes: Set<KType> = emptySet()
 
     /** List of GraphQl data loaders */
     public var dataLoaders: List<KotlinDataLoader<*, *>> = emptyList()
@@ -301,7 +315,7 @@ public class GraphQLKotlinConfiguration {
         Application::class.java.classLoader.getResource("graphql-playground.html")?.readText()
             ?.replace("\${graphQLEndpoint}", graphQLEndpoint)
             ?.replace("\${subscriptionsEndpoint}", subscriptionsEndpoint)
-            ?: throw IllegalStateException("graphql-playground.html cannot be found in the classpath")
+            ?: error("graphql-playground.html cannot be found in the classpath")
     }
 
     /** GraphQL playground */
