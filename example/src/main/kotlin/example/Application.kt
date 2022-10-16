@@ -3,14 +3,20 @@ package example
 import com.expediagroup.graphql.generator.directives.KotlinDirectiveWiringFactory
 import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import com.github.darkxanter.graphql.GraphQLKotlin
+import example.feature.articles.ArticleMutation
+import example.feature.articles.ArticleQuery
+import example.feature.articles.ArticleRepository
+import example.feature.articles.ArticleSubscription
 import example.feature.auth.directives.AuthSchemaDirectiveWiring
 import example.feature.users.User
+import example.feature.users.UserDataLoader
 import example.feature.users.UserQueryService
 import example.feature.users.UserRepository
 import example.graphql.CustomDataFetcherExceptionHandler
 import example.graphql.HelloQueryService
 import example.graphql.SimpleSubscription
 import example.graphql.scalars.graphQLLong
+import graphql.scalars.ExtendedScalars
 import graphql.schema.GraphQLType
 import io.ktor.serialization.jackson.jackson
 import io.ktor.server.application.Application
@@ -21,6 +27,7 @@ import io.ktor.server.plugins.callloging.CallLogging
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.request.header
 import io.ktor.server.websocket.WebSockets
+import java.time.OffsetDateTime
 import kotlin.reflect.KClass
 import kotlin.reflect.KType
 import kotlin.time.Duration.Companion.seconds
@@ -33,6 +40,9 @@ fun main() {
 }
 
 fun Application.configureGraphQLModule() {
+    val articleRepository = ArticleRepository()
+
+
     install(ContentNegotiation) {
         jackson()
     }
@@ -46,10 +56,19 @@ fun Application.configureGraphQLModule() {
         queries = listOf(
             HelloQueryService(),
             UserQueryService(),
+            ArticleQuery(articleRepository),
+        )
+        mutations = listOf(
+            ArticleMutation(articleRepository),
         )
         subscriptions = listOf(
-            SimpleSubscription()
+            SimpleSubscription(),
+            ArticleSubscription(articleRepository),
         )
+        dataLoaders = listOf(
+            UserDataLoader(UserRepository()),
+        )
+
         subscriptionHooks = SubscriptionHooks()
         subscriptionPingInterval = 30.seconds
 
@@ -66,6 +85,7 @@ fun Application.configureGraphQLModule() {
                 override fun willGenerateGraphQLType(type: KType): GraphQLType? {
                     return when (type.classifier as? KClass<*>) {
                         Long::class -> graphQLLong
+                        OffsetDateTime::class -> ExtendedScalars.DateTime
                         else -> null
                     }
                 }
