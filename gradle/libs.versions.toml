@@ -4,6 +4,7 @@ ktor = "2.1.2"
 kotlinx-serialization = "1.4.0"
 kotlinx-coroutines = "1.6.4"
 graphql-kotlin = "6.2.5"
+graphql-java-extended-scalars = "19.0"
 
 logback = "1.4.3"
 
@@ -52,6 +53,7 @@ ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", v
 
 graphqlKotlin-server = { module = "com.expediagroup:graphql-kotlin-server", version.ref = "graphql-kotlin" }
 graphqlKotlin-client = { module = "com.expediagroup:graphql-ktor-client", version.ref = "graphql-kotlin" }
+graphqlJava-extendedScalars = { module = "com.graphql-java:graphql-java-extended-scalars", version.ref = "graphql-java-extended-scalars" }
 
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 
