@@ -11,7 +11,7 @@ import java.util.concurrent.CompletableFuture
 
 @GraphQLName("Article")
 @GraphQLDescription("Article")
-class ArticleDto(
+data class ArticleDto(
     val id: Long,
     val created: OffsetDateTime,
     val authorId: Long,

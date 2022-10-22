@@ -117,3 +117,4 @@ gradle-app.setting
 /.idea/jarRepositories.xml
 /.idea/kotlinc.xml
 /.idea/vcs.xml
+/example/example.db

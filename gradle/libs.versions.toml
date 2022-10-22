@@ -5,11 +5,18 @@ kotlinx-serialization = "1.4.0"
 kotlinx-coroutines = "1.6.4"
 graphql-kotlin = "6.2.5"
 graphql-java-extended-scalars = "19.0"
+graphql-java-extended-validation = "19.1"
 
 logback = "1.4.3"
+kotlin-logging = "3.0.2"
 
 detekt = "1.20.0"
 shadow = "7.1.2"
+
+exposed = "0.40.1"
+sqlite = "3.39.3.0"
+
+kodein = "7.15.0"
 
 [libraries]
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -54,8 +61,19 @@ ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", v
 graphqlKotlin-server = { module = "com.expediagroup:graphql-kotlin-server", version.ref = "graphql-kotlin" }
 graphqlKotlin-client = { module = "com.expediagroup:graphql-ktor-client", version.ref = "graphql-kotlin" }
 graphqlJava-extendedScalars = { module = "com.graphql-java:graphql-java-extended-scalars", version.ref = "graphql-java-extended-scalars" }
+graphqlJava-extendedValidation = { module = "com.graphql-java:graphql-java-extended-validation", version.ref = "graphql-java-extended-validation" }
 
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+kotlinLogging = { module = "io.github.microutils:kotlin-logging-jvm", version.ref = "kotlin-logging" }
+
+sqlite = { module = "org.xerial:sqlite-jdbc", version.ref = "sqlite" }
+exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
+exposed-dao = { module = "org.jetbrains.exposed:exposed-dao", version.ref = "exposed" }
+exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-javaTime = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
+exposed-kotlinDatetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
+
+kodein = { module = "org.kodein.di:kodein-di-framework-ktor-server-jvm", version.ref = "kodein" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref = "kotlin" }

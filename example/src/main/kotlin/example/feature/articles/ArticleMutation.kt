@@ -10,10 +10,14 @@ class ArticleMutation(
 ) : Mutation {
     @GraphQLDescription("Add new article")
     fun addArticle(
-        title: String,
-        content: String,
+        input: ArticleInput,
         dfe: DataFetchingEnvironment,
     ): ArticleDto {
-        return repository.addArticle(title, content, dfe.graphQlContext.user)
+        return repository.addArticle(input.title, input.content, dfe.graphQlContext.user)
     }
 }
+
+data class ArticleInput(
+    val title: String,
+    val content: String,
+)
