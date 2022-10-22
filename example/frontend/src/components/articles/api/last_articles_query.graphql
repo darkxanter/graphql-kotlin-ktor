@@ -1,0 +1,5 @@
+#query LastArticles {
+#    articles(sortOrder: DESC, limit: 5) {
+#        id
+#    }
+#}

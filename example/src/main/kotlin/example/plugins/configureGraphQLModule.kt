@@ -1,5 +1,7 @@
 package example.plugins
 
+import com.expediagroup.graphql.apq.cache.DefaultAutomaticPersistedQueriesCache
+import com.expediagroup.graphql.apq.provider.AutomaticPersistedQueriesProvider
 import com.expediagroup.graphql.generator.directives.KotlinDirectiveWiringFactory
 import com.expediagroup.graphql.generator.hooks.FlowSubscriptionSchemaGeneratorHooks
 import com.github.darkxanter.graphql.GraphQLKotlin
@@ -86,6 +88,11 @@ fun Application.configureGraphQLModule() {
 
         configureGraphQL {
             defaultDataFetcherExceptionHandler(CustomDataFetcherExceptionHandler())
+            preparsedDocumentProvider(
+                AutomaticPersistedQueriesProvider(
+                    DefaultAutomaticPersistedQueriesCache()
+                )
+            )
         }
 
         generateContextMap { request ->

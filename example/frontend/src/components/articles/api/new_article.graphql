@@ -1,0 +1,12 @@
+mutation NewArticle($title: String!, $content: String!) {
+    addArticle(
+        input: {
+            title: $title,
+            content: $content,
+        }
+    ) {
+        id
+        created
+        title
+    }
+}
