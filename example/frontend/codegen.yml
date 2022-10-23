@@ -14,7 +14,16 @@ generates:
   ./src/gql/:
     preset: client
     config:
+      nonOptionalTypename: true
       useTypeImports: true
 #    plugins:
 #      - typescript
 #      - typescript-vue-urql
+  ./src/gql/operations.ts:
+    config:
+      useTypeImports: true
+      typesPrefix: Types.
+    plugins:
+      - add:
+          content: "import * as Types from './graphql';"
+      - typescript-vue-urql

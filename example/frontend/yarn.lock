@@ -1078,6 +1078,22 @@
     "@urql/core" ">=3.0.0"
     wonka "^6.0.0"
 
+"@urql/exchange-populate@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@urql/exchange-populate/-/exchange-populate-1.0.0.tgz#cac779d37c4eaa40c002b4ad9a2de551f7aef3c6"
+  integrity sha512-kOGhMmcoNW/UQr/S5rAe38ghIzVPbM5YOOde9X4ix646lX/TlpiEnT9NgxReZCYLV+pHjF+Kpq/8d/Q85LW3Fw==
+  dependencies:
+    "@urql/core" ">=3.0.0"
+    wonka "^6.0.0"
+
+"@urql/exchange-request-policy@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@urql/exchange-request-policy/-/exchange-request-policy-1.0.0.tgz#ebaf0abc6f608c9875df7fc7cca25c5fcd09c599"
+  integrity sha512-Kq+C7SqgbShqhN/fzx9enPZnTH+P2a4FGnVZcx1Sc0IsfRiwPAn41+ebZ4CUpY5T8pzAg3USuvSy62uaRaKaxA==
+  dependencies:
+    "@urql/core" ">=3.0.0"
+    wonka "^6.0.0"
+
 "@urql/vue@^1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@urql/vue/-/vue-1.0.2.tgz#c1179c216217135f0f1aaf0587fb2872494fb157"

@@ -1,0 +1,50 @@
+{
+    "GraphQL Fragment":{
+        "scope": "typescript, javascript",
+        "prefix": "fragment",
+        "description": "Create new GraphQL Fragment",
+        "body": [
+            "export const ${1}Fragment = graphql(/* GraphQL */ `",
+            "    fragment ${1} on ${2} {",
+            "       $0",
+            "    }",
+            "`);"
+        ]
+    },
+    "GraphQL Query":{
+        "scope": "typescript, javascript",
+        "prefix": "query",
+        "description": "Create new GraphQL Query",
+        "body": [
+            "export const ${1}Query = graphql(/* GraphQL */ `",
+            "    query ${1} {",
+            "       $0",
+            "    }",
+            "`);"
+        ]
+    },
+    "GraphQL Mutation":{
+        "scope": "typescript, javascript",
+        "prefix": "mutation",
+        "description": "Create new GraphQL Mutation",
+        "body": [
+            "export const ${1}Mutation = graphql(/* GraphQL */ `",
+            "    mutation ${1} {",
+            "       $0",
+            "    }",
+            "`);"
+        ]
+    },
+    "GraphQL Subscription":{
+        "scope": "typescript, javascript",
+        "prefix": "subscription",
+        "description": "Create new GraphQL Mutation",
+        "body": [
+            "export const ${1}Subscription = graphql(/* GraphQL */ `",
+            "    subscription ${1} {",
+            "       $0",
+            "    }",
+            "`);"
+        ]
+    }
+}

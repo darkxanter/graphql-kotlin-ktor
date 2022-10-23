@@ -15,20 +15,21 @@
 </template>
 
 <script lang="ts" setup>
-import { defineComponent, ref } from 'vue'
-import { useMutation } from '@urql/vue'
-import { NewArticleDocument } from 'src/gql/graphql'
+import { ref } from 'vue'
+import { useNewArticleMutation } from 'src/gql/operations'
 
 const title = ref('')
 const content = ref('')
 
-const { executeMutation } = useMutation(NewArticleDocument)
+const { executeMutation: newArticle } = useNewArticleMutation()
 
 function submit() {
   if (title.value && content.value) {
-    executeMutation({
-      title: title.value,
-      content: content.value,
+    newArticle({
+      input: {
+        title: title.value,
+        content: content.value,
+      },
     })
   }
 }
