@@ -10,6 +10,8 @@
 import { computed } from 'vue'
 import ArticleItem from 'src/components/articles/ArticleItem.vue'
 import { useArticlesQuery } from 'src/gql/operations'
+import { useFragment } from 'src/gql'
+import { ArticleBriefFragment } from 'src/api/articles'
 
 // const { data, executeQuery } = useQuery({
 //   query: LastArticlesQueryDocument,
@@ -19,7 +21,7 @@ const { data, executeQuery } = useArticlesQuery()
 
 const fetchArticles = () => executeQuery()
 
-const articles = computed(() => data.value?.articles ?? [])
+const articles = computed(() => data.value?.articles?.map((x) => useFragment(ArticleBriefFragment, x)) ?? [])
 
 </script>
 

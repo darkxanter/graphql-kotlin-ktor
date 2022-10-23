@@ -1,14 +1,13 @@
 schema: './schema.graphql'
 documents:
-  - 'src/**/*.vue'
+#  - 'src/**/*.vue'
   - 'src/**/*.ts'
-  - 'src/**/*.graphql'
   - '!src/gql/**/*'
 
 ignoreNoDocuments: true
 config:
   scalars:
-    Long: BigInt
+    Long: number
     DateTime: string
 generates:
   ./src/gql/:
@@ -16,6 +15,7 @@ generates:
     config:
       nonOptionalTypename: true
       useTypeImports: true
+#      documentMode: documentNode
 #    plugins:
 #      - typescript
 #      - typescript-vue-urql

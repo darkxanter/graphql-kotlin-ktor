@@ -7,12 +7,14 @@ const documents = {
     "\n    query Articles($limit: Int! = 5, $sortOrder: SortOrder! = DESC) {\n      articles(sortOrder: $sortOrder, limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n": types.ArticlesDocument,
     "\n    subscription LastArticles($limit: Int! = 5) {\n      articles(limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n": types.LastArticlesDocument,
     "\n    mutation NewArticle($input: ArticleInput!) {\n      addArticle(input: $input) {\n        id\n        created\n      }\n    }\n": types.NewArticleDocument,
+    "\n    subscription Counter {\n       counter\n    }\n": types.CounterDocument,
 };
 
 export function graphql(source: "\n    fragment ArticleBrief on Article {\n      id\n      title\n      created\n      author {\n        id\n        name\n      }\n    }\n"): (typeof documents)["\n    fragment ArticleBrief on Article {\n      id\n      title\n      created\n      author {\n        id\n        name\n      }\n    }\n"];
 export function graphql(source: "\n    query Articles($limit: Int! = 5, $sortOrder: SortOrder! = DESC) {\n      articles(sortOrder: $sortOrder, limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n"): (typeof documents)["\n    query Articles($limit: Int! = 5, $sortOrder: SortOrder! = DESC) {\n      articles(sortOrder: $sortOrder, limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n"];
 export function graphql(source: "\n    subscription LastArticles($limit: Int! = 5) {\n      articles(limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n"): (typeof documents)["\n    subscription LastArticles($limit: Int! = 5) {\n      articles(limit: $limit) {\n        ...ArticleBrief\n      }\n    }\n"];
 export function graphql(source: "\n    mutation NewArticle($input: ArticleInput!) {\n      addArticle(input: $input) {\n        id\n        created\n      }\n    }\n"): (typeof documents)["\n    mutation NewArticle($input: ArticleInput!) {\n      addArticle(input: $input) {\n        id\n        created\n      }\n    }\n"];
+export function graphql(source: "\n    subscription Counter {\n       counter\n    }\n"): (typeof documents)["\n    subscription Counter {\n       counter\n    }\n"];
 
 export function graphql(source: string): unknown;
 export function graphql(source: string) {

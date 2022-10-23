@@ -15,7 +15,7 @@ export type Scalars = {
   /** An RFC-3339 compliant DateTime Scalar */
   DateTime: string;
   /** A 64-bit signed integer */
-  Long: BigInt;
+  Long: number;
 };
 
 /** Article */
@@ -132,7 +132,7 @@ export type User = {
   username: Scalars['String'];
 };
 
-export type ArticleBriefFragment = { __typename?: 'Article', id: BigInt, title: string, created: string, author: { __typename?: 'User', id: BigInt, name: string } } & { ' $fragmentName'?: 'ArticleBriefFragment' };
+export type ArticleBriefFragment = { __typename?: 'Article', id: number, title: string, created: string, author: { __typename?: 'User', id: number, name: string } } & { ' $fragmentName'?: 'ArticleBriefFragment' };
 
 export type ArticlesQueryVariables = Exact<{
   limit?: Scalars['Int'];
@@ -160,9 +160,15 @@ export type NewArticleMutationVariables = Exact<{
 }>;
 
 
-export type NewArticleMutation = { __typename?: 'Mutation', addArticle: { __typename?: 'Article', id: BigInt, created: string } };
+export type NewArticleMutation = { __typename?: 'Mutation', addArticle: { __typename?: 'Article', id: number, created: string } };
+
+export type CounterSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CounterSubscription = { __typename?: 'Subscription', counter: number };
 
 export const ArticleBriefFragmentDoc = {"kind":"Document","definitions":[{"kind":"FragmentDefinition","name":{"kind":"Name","value":"ArticleBrief"},"typeCondition":{"kind":"NamedType","name":{"kind":"Name","value":"Article"}},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"created"}},{"kind":"Field","name":{"kind":"Name","value":"author"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}}]}}]}}]} as unknown as DocumentNode<ArticleBriefFragment, unknown>;
 export const ArticlesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"Articles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"5"}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"SortOrder"}}},"defaultValue":{"kind":"EnumValue","value":"DESC"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"articles"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"sortOrder"},"value":{"kind":"Variable","name":{"kind":"Name","value":"sortOrder"}}},{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ArticleBrief"}}]}}]}},...ArticleBriefFragmentDoc.definitions]} as unknown as DocumentNode<ArticlesQuery, ArticlesQueryVariables>;
 export const LastArticlesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"LastArticles"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"limit"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Int"}}},"defaultValue":{"kind":"IntValue","value":"5"}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"articles"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"limit"},"value":{"kind":"Variable","name":{"kind":"Name","value":"limit"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"FragmentSpread","name":{"kind":"Name","value":"ArticleBrief"}}]}}]}},...ArticleBriefFragmentDoc.definitions]} as unknown as DocumentNode<LastArticlesSubscription, LastArticlesSubscriptionVariables>;
 export const NewArticleDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"NewArticle"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"ArticleInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"addArticle"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"created"}}]}}]}}]} as unknown as DocumentNode<NewArticleMutation, NewArticleMutationVariables>;
+export const CounterDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"subscription","name":{"kind":"Name","value":"Counter"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"counter"}}]}}]} as unknown as DocumentNode<CounterSubscription, CounterSubscriptionVariables>;

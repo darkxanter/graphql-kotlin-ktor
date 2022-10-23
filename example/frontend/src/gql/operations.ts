@@ -47,3 +47,12 @@ export const NewArticleDocument = gql`
 export function useNewArticleMutation() {
   return Urql.useMutation<Types.NewArticleMutation, Types.NewArticleMutationVariables>(NewArticleDocument);
 };
+export const CounterDocument = gql`
+    subscription Counter {
+  counter
+}
+    `;
+
+export function useCounterSubscription<R = Types.CounterSubscription>(options: Omit<Urql.UseSubscriptionArgs<never, Types.CounterSubscriptionVariables>, 'query'> = {}, handler?: Urql.SubscriptionHandlerArg<Types.CounterSubscription, R>) {
+  return Urql.useSubscription<Types.CounterSubscription, R, Types.CounterSubscriptionVariables>({ query: CounterDocument, ...options }, handler);
+};

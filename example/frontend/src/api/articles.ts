@@ -1,4 +1,4 @@
-import { graphql } from 'src/gql';
+import { graphql } from 'src/gql'
 
 
 export const ArticleBriefFragment = graphql(/* GraphQL */ `
@@ -12,7 +12,6 @@ export const ArticleBriefFragment = graphql(/* GraphQL */ `
       }
     }
 `);
-
 
 export const ArticlesQuery = graphql(/* GraphQL */ `
     query Articles($limit: Int! = 5, $sortOrder: SortOrder! = DESC) {
