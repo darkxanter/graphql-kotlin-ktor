@@ -2,9 +2,9 @@ package example.feature.articles
 
 import com.expediagroup.graphql.generator.annotations.GraphQLDescription
 import com.expediagroup.graphql.generator.annotations.GraphQLName
-import com.expediagroup.graphql.server.extensions.getValueFromDataLoader
 import example.feature.users.User
 import example.feature.users.UserDataLoader
+import example.graphql.getValueFromDataLoader
 import graphql.schema.DataFetchingEnvironment
 import java.time.OffsetDateTime
 import java.util.concurrent.CompletableFuture
@@ -18,8 +18,8 @@ data class ArticleDto(
     val title: String,
     val content: String,
 ) {
-    fun author(dataFetchingEnvironment: DataFetchingEnvironment): CompletableFuture<User> {
-        return dataFetchingEnvironment.getValueFromDataLoader(UserDataLoader.dataLoaderName, authorId)
+    fun author(dfe: DataFetchingEnvironment): CompletableFuture<User> {
+        return dfe.getValueFromDataLoader(UserDataLoader::class, authorId)
     }
 }
 
