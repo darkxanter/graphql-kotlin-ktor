@@ -1,22 +1,22 @@
 [versions]
-kotlin = "1.7.20"
-ktor = "2.1.2"
+kotlin = "1.7.22"
+ktor = "2.2.1"
 kotlinx-serialization = "1.4.0"
 kotlinx-coroutines = "1.6.4"
-graphql-kotlin = "6.2.5"
-graphql-java-extended-scalars = "19.0"
-graphql-java-extended-validation = "19.1"
+graphql-kotlin = "6.3.3"
+graphql-java-extended-scalars = "20.0"
+graphql-java-extended-validation = "20.0"
 
-logback = "1.4.3"
-kotlin-logging = "3.0.2"
+logback = "1.4.5"
+kotlin-logging = "3.0.4"
 
 detekt = "1.20.0"
 shadow = "7.1.2"
 
 exposed = "0.40.1"
-sqlite = "3.39.3.0"
+sqlite = "3.40.0.0"
 
-kodein = "7.15.0"
+kodein = "7.15.1"
 
 [libraries]
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
