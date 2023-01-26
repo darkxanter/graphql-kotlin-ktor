@@ -1,6 +1,8 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     application
     kotlin("jvm")
+    alias(libs.plugins.ksp)
 }
 
 application {
@@ -28,4 +30,11 @@ dependencies {
     implementation(libs.exposed.kotlinDatetime)
 
     implementation(libs.kodein)
+
+    compileOnly(libs.kesp.annotations)
+    ksp(libs.kesp.processor)
+}
+
+sourceSets.configureEach {
+    kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
 }

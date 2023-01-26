@@ -1,9 +1,9 @@
 [versions]
 kotlin = "1.7.22"
-ktor = "2.2.1"
+ktor = "2.2.2"
 kotlinx-serialization = "1.4.0"
 kotlinx-coroutines = "1.6.4"
-graphql-kotlin = "6.3.3"
+graphql-kotlin = "6.3.5"
 graphql-java-extended-scalars = "20.0"
 graphql-java-extended-validation = "20.0"
 
@@ -13,10 +13,12 @@ kotlin-logging = "3.0.4"
 detekt = "1.20.0"
 shadow = "7.1.2"
 
-exposed = "0.40.1"
+exposed = "0.41.1"
 sqlite = "3.40.0.0"
+kesp = "0.7.0"
 
 kodein = "7.15.1"
+ksp = "1.7.22-1.0.8"
 
 [libraries]
 kotlinx-serialization = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
@@ -73,6 +75,9 @@ exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "e
 exposed-javaTime = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
 exposed-kotlinDatetime = { module = "org.jetbrains.exposed:exposed-kotlin-datetime", version.ref = "exposed" }
 
+kesp-annotations = { module = "io.github.darkxanter.exposed:kesp-annotations", version.ref = "kesp" }
+kesp-processor = { module = "io.github.darkxanter.exposed:kesp-processor", version.ref = "kesp" }
+
 kodein = { module = "org.kodein.di:kodein-di-framework-ktor-server-jvm", version.ref = "kodein" }
 
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -80,3 +85,6 @@ kotlin-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit5", version.ref
 
 [bundles]
 test = ["kotlin-test", "kotlin-junit", "logback", "kotlinx-coroutines-test"]
+
+[plugins]
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
